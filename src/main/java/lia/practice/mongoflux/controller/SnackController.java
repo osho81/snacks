@@ -4,6 +4,7 @@ import lia.practice.mongoflux.model.Snack;
 import lia.practice.mongoflux.repository.SnackRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -24,6 +25,18 @@ public class SnackController {
     @ResponseStatus(value = HttpStatus.CREATED)
     public Mono<Snack> createSnack(@RequestBody Snack snack) {
         return snackRepository.save(snack);
+    }
+    @PutMapping("/updatesnacks/{name}")
+    public Mono<ResponseEntity<Snack>> updateUserByName(@PathVariable String name, @RequestBody Snack snack) {
+        return snackRepository.findByName(name)
+                .flatMap(existingSnack -> {
+                    existingSnack.setName(snack.getName());
+                    existingSnack.setFlavour(snack.getFlavour());
+                    existingSnack.setWeight(snack.getWeight());
+                    return snackRepository.save(existingSnack);
+                })
+                .map(updatedSnack -> new ResponseEntity<>(updatedSnack, HttpStatus.OK))
+                .defaultIfEmpty(new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
 }
