@@ -1,5 +1,5 @@
 # Set the base image to use
-FROM openjdk:11-jre-slim
+FROM adoptopenjdk:17-jre-hotspot
 
 # Add a volume pointing to /tmp
 VOLUME /tmp
