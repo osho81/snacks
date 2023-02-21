@@ -10,15 +10,13 @@ WORKDIR /app
 # Copy the JAR file into the container at /app:
 
 # Local approach:
-#COPY target/mongoflux-0.0.1-SNAPSHOT.jar app.jar
+COPY target/mongoflux-0.0.1-SNAPSHOT.jar app.jar
 
 # Url approach (e.g. docker build gitlab-url):
-COPY . app/mongoflux.jar
+#COPY . app/mongoflux.jar
 
 # Expose the port that the application will run on
 EXPOSE 8080
 
 # Run the application
 CMD ["java", "-jar", "app.jar"]
-#CMD ["java", "-jar", "/app/app.jar"]
-#CMD ["java", "-jar", "mongoflux.jar"]
