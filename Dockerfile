@@ -7,11 +7,12 @@ VOLUME /tmp
 # Set the working directory
 WORKDIR /app
 
-# Added for docker build gitlabd-url approach
-#RUN mvn -f pom.xml clean package -DskipTests
+# Copy the JAR file into the container at /app:
 
-# Copy the JAR file into the container at /app
+# Local approach:
 #COPY target/mongoflux-0.0.1-SNAPSHOT.jar app.jar
+
+# Url approach (e.g. docker build gitlab-url):
 COPY . /app/mongoflux.jar
 
 # Expose the port that the application will run on
