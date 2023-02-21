@@ -12,7 +12,7 @@ WORKDIR /app
 
 # Copy the JAR file into the container at /app
 #COPY target/mongoflux-0.0.1-SNAPSHOT.jar app.jar
-COPY target/mongoflux.jar /app/mongoflux.jar
+COPY . /app/mongoflux.jar
 
 # Expose the port that the application will run on
 EXPOSE 8080
