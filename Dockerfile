@@ -19,6 +19,6 @@ COPY . /app/mongoflux.jar
 EXPOSE 8080
 
 # Run the application
-#CMD ["java", "-jar", "app.jar"]
+CMD ["java", "-jar", "app.jar"]
 #CMD ["java", "-jar", "/app/app.jar"]
-CMD ["java", "-jar", "mongoflux.jar"]
+#CMD ["java", "-jar", "mongoflux.jar"]
