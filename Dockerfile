@@ -7,6 +7,8 @@ VOLUME /tmp
 # Set the working directory
 WORKDIR /app
 
+RUN mvn -f pom.xml clean package -DskipTests
+
 # Copy the JAR file into the container at /app
 COPY target/mongoflux-0.0.1-SNAPSHOT.jar app.jar
 
