@@ -11,6 +11,7 @@ import reactor.core.publisher.Mono;
 
 @RestController
 @RequestMapping("/snacks")
+@CrossOrigin(origins = "http://localhost:3000")
 public class SnackController {
 
     @Autowired
