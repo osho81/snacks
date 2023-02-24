@@ -27,6 +27,7 @@ public class SnackController {
     public Mono<Snack> createSnack(@RequestBody Snack snack) {
         return snackRepository.save(snack);
     }
+
     @PutMapping("/updatesnacks/{name}")
     public Mono<ResponseEntity<Snack>> updateUserByName(@PathVariable String name, @RequestBody Snack snack) {
         return snackRepository.findByName(name)
