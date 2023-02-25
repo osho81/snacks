@@ -29,7 +29,7 @@ public class SnackController {
     }
 
     @PutMapping("/updatesnacks/{name}")
-    public Mono<ResponseEntity<Snack>> updateUserByName(@PathVariable String name, @RequestBody Snack snack) {
+    public Mono<ResponseEntity<Snack>> updateSnackByName(@PathVariable String name, @RequestBody Snack snack) {
         return snackRepository.findByName(name)
                 .flatMap(existingSnack -> {
                     existingSnack.setName(snack.getName());
@@ -41,8 +41,8 @@ public class SnackController {
                 .defaultIfEmpty(new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
-    @DeleteMapping("/deletesnacks/{id}")
-    public Mono<Void> delete(@PathVariable String name)
+    @DeleteMapping("/deletesnacks/{name}")
+    public Mono<Void> deleteSnackByName(@PathVariable String name)
     {
         return snackRepository.deleteByName(name);
     }
