@@ -10,7 +10,7 @@ import org.springframework.data.mongodb.core.mapping.MongoId;
 @Document (value = "snacks")
 public class Snack {
 
-    @Id
+//    @Id
 //    @MongoId
     private String id; // String, aligned with SnackRepository mongo-crud
 

@@ -9,7 +9,4 @@ import reactor.core.publisher.Mono;
 public interface SnackRepository extends ReactiveMongoRepository<Snack, String> {
     Mono<Snack> findByName(String name);
 
-    Mono<Void> deleteByName(String name);
-
-
 }

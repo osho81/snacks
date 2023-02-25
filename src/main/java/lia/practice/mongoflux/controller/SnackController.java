@@ -2,6 +2,7 @@ package lia.practice.mongoflux.controller;
 
 import lia.practice.mongoflux.model.Snack;
 import lia.practice.mongoflux.repository.SnackRepository;
+import lia.practice.mongoflux.service.SnackService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,35 +18,33 @@ public class SnackController {
     @Autowired
     private SnackRepository snackRepository;
 
+    @Autowired
+    private SnackService snackService;
+
     @GetMapping
     public Flux<Snack> getAllSnacks() {
-        return snackRepository.findAll();
+        return snackService.getAllSnacks();
+    }
+
+    @GetMapping("/snackbyid/{id}")
+    public Mono<Snack> getById(@PathVariable String id) {
+        return snackService.getById(id);
     }
 
     @PostMapping("/createsnacks")
     @ResponseStatus(value = HttpStatus.CREATED)
     public Mono<Snack> createSnack(@RequestBody Snack snack) {
-        return snackRepository.save(snack);
+        return snackService.createSnack(snack);
     }
 
-    @PutMapping("/updatesnacks/{name}")
-    public Mono<ResponseEntity<Snack>> updateSnackByName(@PathVariable String name, @RequestBody Snack snack) {
-        return snackRepository.findByName(name)
-                .flatMap(existingSnack -> {
-                    existingSnack.setName(snack.getName());
-                    existingSnack.setFlavour(snack.getFlavour());
-                    existingSnack.setWeight(snack.getWeight());
-                    return snackRepository.save(existingSnack);
-                })
-                .map(updatedSnack -> new ResponseEntity<>(updatedSnack, HttpStatus.OK))
-                .defaultIfEmpty(new ResponseEntity<>(HttpStatus.NOT_FOUND));
+    @PutMapping("/updatesnacks/{id}")
+    public Mono<ResponseEntity<Snack>> updateSnack(@PathVariable String id, @RequestBody Snack snack) {
+        return snackService.updateSnack(id, snack);
     }
 
-    @DeleteMapping("/deletesnacks/{name}")
-    public Mono<Void> deleteSnackByName(@PathVariable String name)
-    {
-        return snackRepository.deleteByName(name);
+    @DeleteMapping("/deletesnacks/{id}")
+    public Mono<Void> deleteById(@PathVariable String id) {
+        return snackService.deleteById(id);
     }
-
 
 }
