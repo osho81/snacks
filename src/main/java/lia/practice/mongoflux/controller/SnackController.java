@@ -41,4 +41,11 @@ public class SnackController {
                 .defaultIfEmpty(new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
+    @DeleteMapping("/deletesnacks/{id}")
+    public Mono<Void> delete(@PathVariable String name)
+    {
+        return snackRepository.deleteByName(name);
+    }
+
+
 }
