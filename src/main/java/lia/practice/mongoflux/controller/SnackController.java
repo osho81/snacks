@@ -3,6 +3,8 @@ package lia.practice.mongoflux.controller;
 import lia.practice.mongoflux.model.Snack;
 import lia.practice.mongoflux.repository.SnackRepository;
 import lia.practice.mongoflux.service.SnackService;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,15 +17,35 @@ import reactor.core.publisher.Mono;
 @CrossOrigin(origins = "http://localhost:3000")
 public class SnackController {
 
+    // Create logger object
+    private static final Logger logger = LogManager.getLogger(SnackController.class);
+
     @Autowired
     private SnackRepository snackRepository;
 
     @Autowired
     private SnackService snackService;
 
+//    @GetMapping
+//    public Flux<Snack> getAllSnacks() {
+//        return snackService.getAllSnacks();
+//    }
+
+    // Example getAllSnacks method with extensive trace example
     @GetMapping
     public Flux<Snack> getAllSnacks() {
-        return snackService.getAllSnacks();
+
+        logger.trace("Entering getAllSnacks() method");
+
+        Flux<Snack> snacks = snackService.getAllSnacks();
+
+        snacks.doOnComplete(() -> logger.trace("Finished retrieving all snacks"))
+                .doOnError(error -> logger.error("Error occurred while retrieving snacks: {}", error.getMessage()))
+                .doOnNext(snack -> logger.trace("Retrieved snack: {}", snack.getId()))
+                .subscribe();
+
+        logger.trace("Leaving getAllItems() method");
+        return snacks;
     }
 
     @GetMapping("/snackbyid/{id}")

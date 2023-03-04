@@ -14,6 +14,7 @@ import reactor.core.publisher.Mono;
 @Service
 public class SnackService {
 
+    // Create logger object
     private static final Logger logger = LogManager.getLogger(SnackService.class);
 
     @Autowired
@@ -29,6 +30,7 @@ public class SnackService {
     }
 
     public Mono<Snack> createSnack(Snack snack) {
+        logger.info("Created a snack");
         return snackRepository.save(snack);
     }
 
