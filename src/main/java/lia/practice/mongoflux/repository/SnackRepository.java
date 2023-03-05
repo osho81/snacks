@@ -13,4 +13,6 @@ import java.util.UUID;
 public interface SnackRepository extends ReactiveMongoRepository<Snack, UUID> { // UUID used in Snack Entity
     Mono<Snack> findByName(String name);
 
+    Mono<Boolean> existsByName(String name);
+
 }
