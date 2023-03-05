@@ -13,6 +13,7 @@ import reactor.core.publisher.Mono;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.UUID;
 
 // Use UUID or String as paras/args depending on @Id datatype
@@ -42,11 +43,11 @@ public class SnackService {
 
         // If no date/time is provided, set current date
         LocalDateTime creationDateTime;
-        if (snack.getCreationDate() == null) {
-            creationDateTime = LocalDateTime.now();
+        if (snack.getCreationDateTime() == null) {
+            creationDateTime = LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS);
         // Else set the date/time provided form postman/frontend
         } else {
-            creationDateTime = snack.getCreationDate();
+            creationDateTime = snack.getCreationDateTime().truncatedTo(ChronoUnit.SECONDS);
         }
 
         // Use Snack entity constructor, to generate uuid as id, before save in db
