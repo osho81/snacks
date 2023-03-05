@@ -11,6 +11,8 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.UUID;
 
 // Use UUID or String as paras/args depending on @Id datatype
@@ -38,11 +40,23 @@ public class SnackService {
 
     public Mono<Snack> createSnack(Snack snack) {
 
+        // If no date/time is provided, set current date
+        LocalDateTime creationDateTime;
+        if (snack.getCreationDate() == null) {
+            creationDateTime = LocalDateTime.now();
+        // Else set the date/time provided form postman/frontend
+        } else {
+            creationDateTime = snack.getCreationDate();
+        }
+
         // Use Snack entity constructor, to generate uuid as id, before save in db
 //        Snack tempSnack = new Snack(snack.getName(), snack.getFlavour(), snack.getWeight());
 
         // Example create snack and provide productId-UUID
-        Snack tempSnack = new Snack(snack.getName(), snack.getFlavour(), snack.getWeight(), UUID.randomUUID());
+//        Snack tempSnack = new Snack(snack.getName(), snack.getFlavour(), snack.getWeight(), UUID.randomUUID());
+
+        // Example create snack and provide productId-UUID & creation date
+        Snack tempSnack = new Snack(snack.getName(), snack.getFlavour(), snack.getWeight(), UUID.randomUUID(), creationDateTime);
 
         logger.info("Created a snack");
         return snackRepository.save(tempSnack);
