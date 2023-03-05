@@ -5,39 +5,61 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 import org.springframework.data.mongodb.core.mapping.MongoId;
 
+import java.util.UUID;
+
 // Annotation declaring this as a mongoDB entity to create records from,
 // and value is name of the collection
 @Document (value = "snacks")
 public class Snack {
 
-//    @Id
-//    @MongoId
-    private String id; // String, aligned with SnackRepository mongo-crud
+    @Id
+    private UUID id; // If UUID in SnackRepository
+    // private String id; // If String in SnackRepository
 
-//    @Field("name")
+    private UUID productId;
+
     private String name;
 
-//    @Field("flavour")
     private String flavour;
 
-//    @Field("weight")
     private double weight;
 
+    // Empty constructor
     public Snack() {
     }
 
-    public Snack(String id, String name, String flavour, double weight) {
-        this.id = id;
+    // Constructor without productId
+    public Snack(String name, String flavour, double weight) {
+//        this.id = id;
+        this.id = UUID.randomUUID();
         this.name = name;
         this.flavour = flavour;
         this.weight = weight;
     }
 
-    public String getId() {
+    // Constructor including productId as well
+    public Snack(String name, String flavour, double weight, UUID productId) {
+//        this.id = id;
+        this.id = UUID.randomUUID(); // Example using db generated UUID
+        this.name = name;
+        this.flavour = flavour;
+        this.weight = weight;
+        this.productId = productId; // Example assigning provided UUID
+    }
+
+//    public String getId() {
+//        return id;
+//    }
+//
+//    public void setId(String id) {
+//        this.id = id;
+//    }
+
+    public UUID getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(UUID id) {
         this.id = id;
     }
 
@@ -63,5 +85,13 @@ public class Snack {
 
     public void setWeight(double weight) {
         this.weight = weight;
+    }
+
+    public UUID getProductId() {
+        return productId;
+    }
+
+    public void setProductId(UUID productId) {
+        this.productId = productId;
     }
 }
