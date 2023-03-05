@@ -6,6 +6,7 @@ import org.springframework.data.mongodb.core.mapping.Field;
 import org.springframework.data.mongodb.core.mapping.MongoId;
 
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.UUID;
 
 // Annotation declaring this as a mongoDB entity to create records from,
@@ -25,7 +26,7 @@ public class Snack {
 
     private double weight;
 
-    private LocalDateTime creationDate;
+    private LocalDateTime creationDateTime;
 
     // Empty constructor
     public Snack() {
@@ -50,13 +51,14 @@ public class Snack {
     }
 
     // Constructor including DateTime as well
-    public Snack(String name, String flavour, double weight, UUID productId, LocalDateTime creationDate) {
+    public Snack(String name, String flavour, double weight, UUID productId, LocalDateTime creationDateTime) {
         this.id = UUID.randomUUID(); // Example using db generated UUID
         this.name = name;
         this.flavour = flavour;
         this.weight = weight;
         this.productId = productId; // Example assigning provided UUID
-        this.creationDate = creationDate.withNano(0);; // Remove nano seconds
+//        this.creationDateTime = creationDateTime.withNano(0); // Remove nano seconds
+        this.creationDateTime = creationDateTime.truncatedTo(ChronoUnit.SECONDS); // Remove nano seconds
     }
 
 
@@ -108,11 +110,13 @@ public class Snack {
         this.productId = productId;
     }
 
-    public LocalDateTime getCreationDate() {
-        return creationDate;
+    public LocalDateTime getCreationDateTime() {
+//        return creationDateTime.withNano(0);
+        return creationDateTime.truncatedTo(ChronoUnit.SECONDS);
     }
 
-    public void setCreationDate(LocalDateTime creationDate) {
-        this.creationDate = creationDate.withNano(0);
+    public void setCreationDateTime(LocalDateTime creationDateTime) {
+//        this.creationDateTime = creationDateTime.withNano(0);
+        this.creationDateTime = creationDateTime.truncatedTo(ChronoUnit.SECONDS);
     }
 }
