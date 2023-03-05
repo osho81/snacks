@@ -44,7 +44,8 @@ public class SnackService {
         // If no date/time is provided, set current date
         LocalDateTime creationDateTime;
         if (snack.getCreationDateTime() == null) {
-            creationDateTime = LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS);
+            creationDateTime = LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS); // Remove nano seconds
+
         // Else set the date/time provided form postman/frontend
         } else {
             creationDateTime = snack.getCreationDateTime().truncatedTo(ChronoUnit.SECONDS);
