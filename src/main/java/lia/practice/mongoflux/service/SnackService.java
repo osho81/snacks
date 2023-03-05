@@ -16,6 +16,9 @@ import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.UUID;
 
+import static org.springframework.data.mongodb.core.query.Criteria.where;
+import static org.springframework.data.mongodb.core.query.Query.query;
+
 // Use UUID or String as paras/args depending on @Id datatype
 
 @Service
@@ -46,7 +49,7 @@ public class SnackService {
         if (snack.getCreationDateTime() == null) {
             creationDateTime = LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS); // Remove nano seconds
 
-        // Else set the date/time provided form postman/frontend
+            // Else set the date/time provided form postman/frontend
         } else {
             creationDateTime = snack.getCreationDateTime().truncatedTo(ChronoUnit.SECONDS);
         }
@@ -62,6 +65,30 @@ public class SnackService {
 
         logger.info("Created a snack");
         return snackRepository.save(tempSnack);
+    }
+
+    // Create snack with logic rejecting duplicate names
+    public Mono<Snack> createSnackNoDuplicate(Snack snack) {
+        // Check if snack already exists in MongoDB
+        // Use repository existByName method, that returns a boolean
+        return snackRepository.existsByName(snack.getName())
+                .flatMap(exists -> {
+                    if (exists) {
+                        return Mono.error(new RuntimeException("Duplicate snack found"));
+
+                    } else { // If not already exist, set creation logic and save
+                        LocalDateTime creationDateTime;
+                        if (snack.getCreationDateTime() == null) {
+                            creationDateTime = LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS);
+                        } else {
+                            creationDateTime = snack.getCreationDateTime().truncatedTo(ChronoUnit.SECONDS);
+                        }
+
+                        Snack tempSnack = new Snack(snack.getName(), snack.getFlavour(), snack.getWeight(), UUID.randomUUID(), creationDateTime);
+
+                        return snackRepository.save(tempSnack);
+                    }
+                });
     }
 
     public Mono<ResponseEntity<Snack>> updateSnack(String id, Snack snack) {

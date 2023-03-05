@@ -60,7 +60,8 @@ public class SnackController {
     @PostMapping("/createsnacks")
     @ResponseStatus(value = HttpStatus.CREATED)
     public Mono<Snack> createSnack(@RequestBody Snack snack) {
-        return snackService.createSnack(snack);
+//        return snackService.createSnack(snack);
+        return snackService.createSnackNoDuplicate(snack); // USing the no duplicate logic
     }
 
     @PutMapping("/updatesnacks/{id}")
