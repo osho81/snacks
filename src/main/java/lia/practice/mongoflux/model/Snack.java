@@ -5,6 +5,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 import org.springframework.data.mongodb.core.mapping.MongoId;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 // Annotation declaring this as a mongoDB entity to create records from,
@@ -24,6 +25,8 @@ public class Snack {
 
     private double weight;
 
+    private LocalDateTime creationDate;
+
     // Empty constructor
     public Snack() {
     }
@@ -39,13 +42,23 @@ public class Snack {
 
     // Constructor including productId as well
     public Snack(String name, String flavour, double weight, UUID productId) {
-//        this.id = id;
         this.id = UUID.randomUUID(); // Example using db generated UUID
         this.name = name;
         this.flavour = flavour;
         this.weight = weight;
         this.productId = productId; // Example assigning provided UUID
     }
+
+    // Constructor including DateTime as well
+    public Snack(String name, String flavour, double weight, UUID productId, LocalDateTime creationDate) {
+        this.id = UUID.randomUUID(); // Example using db generated UUID
+        this.name = name;
+        this.flavour = flavour;
+        this.weight = weight;
+        this.productId = productId; // Example assigning provided UUID
+        this.creationDate = creationDate.withNano(0);; // Remove nano seconds
+    }
+
 
 //    public String getId() {
 //        return id;
@@ -93,5 +106,13 @@ public class Snack {
 
     public void setProductId(UUID productId) {
         this.productId = productId;
+    }
+
+    public LocalDateTime getCreationDate() {
+        return creationDate;
+    }
+
+    public void setCreationDate(LocalDateTime creationDate) {
+        this.creationDate = creationDate.withNano(0);
     }
 }
