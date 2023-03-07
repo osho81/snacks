@@ -1,7 +1,7 @@
-package lia.practice.mongoflux.service;
+package lia.practice.mongofluxpractice.service;
 
-import lia.practice.mongoflux.model.Snack;
-import lia.practice.mongoflux.repository.SnackRepository;
+import lia.practice.mongofluxpractice.model.Snack;
+import lia.practice.mongofluxpractice.repository.SnackRepository;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,12 +12,8 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.UUID;
-
-import static org.springframework.data.mongodb.core.query.Criteria.where;
-import static org.springframework.data.mongodb.core.query.Query.query;
 
 // Use UUID or String as paras/args depending on @Id datatype
 
@@ -91,6 +87,34 @@ public class SnackService {
                 });
     }
 
+    // Create service method for MOCK data (message + empty error if snack exists)
+    public Mono<Snack> createSnackNoDuplicateMock(Snack snack) {
+        return snackRepository.existsByName(snack.getName())
+                .flatMap(exists -> {
+                    if (exists) {
+                        logger.info(snack.getName() + " already exist"); // Use logger
+//                        System.out.println(snack.getName() + " already exist");
+
+                        return Mono.empty(); // Must return something
+
+                    } else {
+                        LocalDateTime creationDateTime;
+                        if (snack.getCreationDateTime() == null) {
+                            creationDateTime = LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS);
+                        } else {
+                            creationDateTime = snack.getCreationDateTime().truncatedTo(ChronoUnit.SECONDS);
+                        }
+
+                        // uuid is provided in mock creation
+                        Snack tempSnack = new Snack(snack.getName(), snack.getFlavour(), snack.getWeight(), snack.getProductId(), creationDateTime);
+
+                        logger.info(snack.getName() + " created");
+//                        System.out.println(snack.getName() + " created");
+                        return snackRepository.save(tempSnack);
+                    }
+                });
+    }
+
     public Mono<ResponseEntity<Snack>> updateSnack(String id, Snack snack) {
         return snackRepository.findById(UUID.fromString(id))
 //        return snackRepository.findById(id)
@@ -100,6 +124,26 @@ public class SnackService {
                     existingSnack.setWeight(snack.getWeight());
                     return snackRepository.save(existingSnack);
                 })
+                .map(updatedSnack -> new ResponseEntity<>(updatedSnack, HttpStatus.OK))
+                .defaultIfEmpty(new ResponseEntity<>(HttpStatus.NOT_FOUND));
+    }
+
+    public Mono<ResponseEntity<Snack>> updateSnackNoDuplicate(String id, Snack snack) {
+        return snackRepository.findById(UUID.fromString(id))
+                .flatMap(existingSnack ->
+                        // Also check if input name already exists
+                        snackRepository.existsByName(snack.getName())
+                                .flatMap(exists -> { // Check if exist but ignore duplicate if it is same as itself
+                                    if (exists && !snack.getName().trim().equalsIgnoreCase(existingSnack.getName().trim())) {
+                                        return Mono.error(new RuntimeException("Duplicate snack name"));
+
+                                    } else { // If name is free to use, update/save new fields
+                                        existingSnack.setName(snack.getName());
+                                        existingSnack.setFlavour(snack.getFlavour());
+                                        existingSnack.setWeight(snack.getWeight());
+                                        return snackRepository.save(existingSnack);
+                                    }
+                                }))
                 .map(updatedSnack -> new ResponseEntity<>(updatedSnack, HttpStatus.OK))
                 .defaultIfEmpty(new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }

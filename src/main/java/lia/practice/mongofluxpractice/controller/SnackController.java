@@ -1,8 +1,8 @@
-package lia.practice.mongoflux.controller;
+package lia.practice.mongofluxpractice.controller;
 
-import lia.practice.mongoflux.model.Snack;
-import lia.practice.mongoflux.repository.SnackRepository;
-import lia.practice.mongoflux.service.SnackService;
+import lia.practice.mongofluxpractice.model.Snack;
+import lia.practice.mongofluxpractice.repository.SnackRepository;
+import lia.practice.mongofluxpractice.service.SnackService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,8 +11,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-
-import java.util.UUID;
 
 // Use UUID or String as paras/args depending on @Id datatype
 
@@ -39,7 +37,7 @@ public class SnackController {
     @GetMapping
     public Flux<Snack> getAllSnacks() {
 
-        logger.trace("Entering getAllSnacks() method");
+        logger.info("Entering getAllSnacks() method");
 
         Flux<Snack> snacks = snackService.getAllSnacks();
 
@@ -61,12 +59,13 @@ public class SnackController {
     @ResponseStatus(value = HttpStatus.CREATED)
     public Mono<Snack> createSnack(@RequestBody Snack snack) {
 //        return snackService.createSnack(snack);
-        return snackService.createSnackNoDuplicate(snack); // USing the no duplicate logic
+        return snackService.createSnackNoDuplicate(snack); // Using the no duplicate logic
     }
 
     @PutMapping("/updatesnacks/{id}")
     public Mono<ResponseEntity<Snack>> updateSnack(@PathVariable String id, @RequestBody Snack snack) {
-        return snackService.updateSnack(id, snack);
+//        return snackService.updateSnack(id, snack);
+        return snackService.updateSnackNoDuplicate(id, snack); // Using the no duplicate name logic
     }
 
     @DeleteMapping("/deletesnacks/{id}")
