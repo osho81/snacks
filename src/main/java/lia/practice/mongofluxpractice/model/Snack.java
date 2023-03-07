@@ -1,9 +1,7 @@
-package lia.practice.mongoflux.model;
+package lia.practice.mongofluxpractice.model;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
-import org.springframework.data.mongodb.core.mapping.Field;
-import org.springframework.data.mongodb.core.mapping.MongoId;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
@@ -58,7 +56,8 @@ public class Snack {
         this.weight = weight;
         this.productId = productId; // Example assigning provided UUID
 //        this.creationDateTime = creationDateTime.withNano(0); // Remove nano seconds
-        this.creationDateTime = creationDateTime.truncatedTo(ChronoUnit.SECONDS); // Remove nano seconds
+//        this.creationDateTime = creationDateTime.truncatedTo(ChronoUnit.SECONDS); // Remove nano seconds
+        this.creationDateTime = creationDateTime; // Use this to also accept null here
     }
 
 
@@ -112,11 +111,12 @@ public class Snack {
 
     public LocalDateTime getCreationDateTime() {
 //        return creationDateTime.withNano(0);
-        return creationDateTime.truncatedTo(ChronoUnit.SECONDS);
+        return creationDateTime;
     }
 
     public void setCreationDateTime(LocalDateTime creationDateTime) {
 //        this.creationDateTime = creationDateTime.withNano(0);
-        this.creationDateTime = creationDateTime.truncatedTo(ChronoUnit.SECONDS);
+//        this.creationDateTime = creationDateTime.truncatedTo(ChronoUnit.SECONDS);
+        this.creationDateTime = creationDateTime;
     }
 }
