@@ -1,4 +1,4 @@
-package lia.practice.mongoflux;
+package lia.practice.mongofluxpractice;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
