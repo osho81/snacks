@@ -87,34 +87,6 @@ public class SnackService {
                 });
     }
 
-    // Create service method for MOCK data (message + empty error if snack exists)
-    public Mono<Snack> createSnackNoDuplicateMock(Snack snack) {
-        return snackRepository.existsByName(snack.getName())
-                .flatMap(exists -> {
-                    if (exists) {
-                        logger.info(snack.getName() + " already exist"); // Use logger
-//                        System.out.println(snack.getName() + " already exist");
-
-                        return Mono.empty(); // Must return something
-
-                    } else {
-                        LocalDateTime creationDateTime;
-                        if (snack.getCreationDateTime() == null) {
-                            creationDateTime = LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS);
-                        } else {
-                            creationDateTime = snack.getCreationDateTime().truncatedTo(ChronoUnit.SECONDS);
-                        }
-
-                        // uuid is provided in mock creation
-                        Snack tempSnack = new Snack(snack.getName(), snack.getFlavour(), snack.getWeight(), snack.getProductId(), creationDateTime);
-
-                        logger.info(snack.getName() + " created");
-//                        System.out.println(snack.getName() + " created");
-                        return snackRepository.save(tempSnack);
-                    }
-                });
-    }
-
     public Mono<ResponseEntity<Snack>> updateSnack(String id, Snack snack) {
         return snackRepository.findById(UUID.fromString(id))
 //        return snackRepository.findById(id)
