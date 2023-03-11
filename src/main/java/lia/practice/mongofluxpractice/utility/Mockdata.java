@@ -7,20 +7,26 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.UUID;
 
-@Configuration // Enable bean for mockdata on startup
+//@Configuration // Enable bean for mockdata on startup
+@Component // More specific class annotation
 public class Mockdata {
 
-    @Autowired
-    private SnackService snackService;
+//    @Autowired // Avoid field injection
+//    private SnackRepository snackRepository;
 
-    @Autowired
-    private SnackRepository snackRepository;
+    // Constructor injection
+    private final SnackRepository snackRepository;
+    public Mockdata(SnackRepository snackRepository) {
+        this.snackRepository = snackRepository;
+    }
+
 
     @Bean
     public CommandLineRunner databaseSeeder() {
@@ -30,11 +36,14 @@ public class Mockdata {
             // Id (uuid) is generated (so not included as arg)
             // Product-id (uuid) is randomized here and provided to the snack constructor
             // Where date & time is null, it gets assigned current date/time
-            Snack snack1 = new Snack("mock snack 1", "cheese", 150, UUID.randomUUID(), null);
-            Snack snack2 = new Snack("mock snack 2", "salty", 275, UUID.randomUUID(), LocalDateTime.now().minusDays(1).minusHours(4).minusMinutes(30));
-            Snack snack3 = new Snack("mock snack 3", "onion", 125, UUID.randomUUID(), null);
-            Snack snack4 = new Snack("mock snack 4", "sourcream", 100, UUID.randomUUID(), LocalDateTime.now().minusDays(3).minusHours(2).minusMinutes(15));
-            Snack snack5 = new Snack("mock snack 5", "cheese", 50, UUID.randomUUID(), LocalDateTime.now().minusDays(0).minusHours(0).minusMinutes(50));
+            Snack snack1 = new Snack("mock snack 1", "cheese", 150, UUID.randomUUID(), null, "2023-02-02 12:00:00");
+            Snack snack2 = new Snack("mock snack 2", "salty", 275, UUID.randomUUID(),
+                    LocalDateTime.now().minusDays(1).minusHours(4).minusMinutes(30), "2023-03-03 13:15:00");
+            Snack snack3 = new Snack("mock snack 3", "onion", 125, UUID.randomUUID(), null, "2023-02-12 15:35:00");
+            Snack snack4 = new Snack("mock snack 4", "sourcream", 100, UUID.randomUUID(),
+                    LocalDateTime.now().minusDays(3).minusHours(2).minusMinutes(15), null);
+            Snack snack5 = new Snack("mock snack 5", "cheese", 50, UUID.randomUUID(),
+                    LocalDateTime.now().minusDays(0).minusHours(0).minusMinutes(50), "2023-02-29 22:05:20");
 
             // Use method in this class to create snacks with no duplicate logic
             createSnackNoDuplicateMock(snack1).subscribe();
@@ -69,7 +78,8 @@ public class Mockdata {
                         }
 
                         // uuid is provided in mock creation above
-                        Snack tempSnack = new Snack(snack.getName(), snack.getFlavour(), snack.getWeight(), snack.getProductId(), creationDateTime);
+                        Snack tempSnack = new Snack(snack.getName(), snack.getFlavour(), snack.getWeight(),
+                                snack.getProductId(), creationDateTime, snack.getCreationDateTimeString());
 
 //                        logger.info(snack.getName() + " created");
                         System.out.println(snack.getName() + " created");

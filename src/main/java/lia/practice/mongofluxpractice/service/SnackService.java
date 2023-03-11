@@ -23,8 +23,14 @@ public class SnackService {
     // Create logger object
     private static final Logger logger = LogManager.getLogger(SnackService.class);
 
-    @Autowired
-    private SnackRepository snackRepository;
+//    @Autowired // Avoid field injection
+//    private SnackRepository snackRepository;
+
+    // Constructor injection
+    private final SnackRepository snackRepository;
+    public SnackService(SnackRepository snackRepository) {
+        this.snackRepository = snackRepository;
+    }
 
     public Flux<Snack> getAllSnacks() {
         logger.info("Get all snacks");
@@ -57,7 +63,7 @@ public class SnackService {
 //        Snack tempSnack = new Snack(snack.getName(), snack.getFlavour(), snack.getWeight(), UUID.randomUUID());
 
         // Example create snack and provide productId-UUID & creation date
-        Snack tempSnack = new Snack(snack.getName(), snack.getFlavour(), snack.getWeight(), UUID.randomUUID(), creationDateTime);
+        Snack tempSnack = new Snack(snack.getName(), snack.getFlavour(), snack.getWeight(), UUID.randomUUID(), creationDateTime, snack.getCreationDateTimeString());
 
         logger.info("Created a snack");
         return snackRepository.save(tempSnack);
@@ -80,7 +86,7 @@ public class SnackService {
                             creationDateTime = snack.getCreationDateTime().truncatedTo(ChronoUnit.SECONDS);
                         }
 
-                        Snack tempSnack = new Snack(snack.getName(), snack.getFlavour(), snack.getWeight(), UUID.randomUUID(), creationDateTime);
+                        Snack tempSnack = new Snack(snack.getName(), snack.getFlavour(), snack.getWeight(), UUID.randomUUID(), creationDateTime, snack.getCreationDateTimeString());
 
                         return snackRepository.save(tempSnack);
                     }
@@ -113,6 +119,8 @@ public class SnackService {
                                         existingSnack.setName(snack.getName());
                                         existingSnack.setFlavour(snack.getFlavour());
                                         existingSnack.setWeight(snack.getWeight());
+                                        // Test string date/time:
+                                        existingSnack.setCreationDateTimeString(snack.getCreationDateTimeString());
                                         return snackRepository.save(existingSnack);
                                     }
                                 }))

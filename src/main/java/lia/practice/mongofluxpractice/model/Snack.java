@@ -26,6 +26,8 @@ public class Snack {
 
     private LocalDateTime creationDateTime;
 
+    private String creationDateTimeString;
+
     // Empty constructor
     public Snack() {
     }
@@ -49,7 +51,7 @@ public class Snack {
     }
 
     // Constructor including DateTime as well
-    public Snack(String name, String flavour, double weight, UUID productId, LocalDateTime creationDateTime) {
+    public Snack(String name, String flavour, double weight, UUID productId, LocalDateTime creationDateTime, String creationDateTimeString) {
         this.id = UUID.randomUUID(); // Example using db generated UUID
         this.name = name;
         this.flavour = flavour;
@@ -58,6 +60,7 @@ public class Snack {
 //        this.creationDateTime = creationDateTime.withNano(0); // Remove nano seconds
 //        this.creationDateTime = creationDateTime.truncatedTo(ChronoUnit.SECONDS); // Remove nano seconds
         this.creationDateTime = creationDateTime; // Use this to also accept null here
+        this.creationDateTimeString = creationDateTimeString;
     }
 
 
@@ -118,5 +121,13 @@ public class Snack {
 //        this.creationDateTime = creationDateTime.withNano(0);
 //        this.creationDateTime = creationDateTime.truncatedTo(ChronoUnit.SECONDS);
         this.creationDateTime = creationDateTime;
+    }
+
+    public String getCreationDateTimeString() {
+        return creationDateTimeString;
+    }
+
+    public void setCreationDateTimeString(String creationDateTimeString) {
+        this.creationDateTimeString = creationDateTimeString;
     }
 }
