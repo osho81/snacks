@@ -1,8 +1,7 @@
-package lia.practice.mongofluxpractice.controller;
+package lia.practice.snacks.controller;
 
-import lia.practice.mongofluxpractice.model.Snack;
-import lia.practice.mongofluxpractice.repository.SnackRepository;
-import lia.practice.mongofluxpractice.service.SnackService;
+import lia.practice.snacks.model.Snack;
+import lia.practice.snacks.service.SnackService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.http.HttpStatus;
@@ -15,7 +14,7 @@ import reactor.core.publisher.Mono;
 
 @RestController
 @RequestMapping("/snacks")
-@CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin(origins = {"http://localhost:3000", "http://localhost:4200"}) // React & Angular
 public class SnackController {
 
     // Create logger object

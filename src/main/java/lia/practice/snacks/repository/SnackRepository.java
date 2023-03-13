@@ -1,6 +1,6 @@
-package lia.practice.mongofluxpractice.repository;
+package lia.practice.snacks.repository;
 
-import lia.practice.mongofluxpractice.model.Snack;
+import lia.practice.snacks.model.Snack;
 import org.springframework.data.mongodb.repository.ReactiveMongoRepository;
 import reactor.core.publisher.Mono;
 

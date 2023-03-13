@@ -1,10 +1,9 @@
-package lia.practice.mongofluxpractice.service;
+package lia.practice.snacks.service;
 
-import lia.practice.mongofluxpractice.model.Snack;
-import lia.practice.mongofluxpractice.repository.SnackRepository;
+import lia.practice.snacks.model.Snack;
+import lia.practice.snacks.repository.SnackRepository;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -12,6 +11,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.UUID;
 
@@ -47,13 +47,15 @@ public class SnackService {
     public Mono<Snack> createSnack(Snack snack) {
 
         // If no date/time is provided, set current date
-        LocalDateTime creationDateTime;
-        if (snack.getCreationDateTime() == null) {
-            creationDateTime = LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS); // Remove nano seconds
+        String creationDateTime;
+        if (snack.getCreationDateTimeString() == null) {
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"); // Specify format
+            String formattedDateTime = LocalDateTime.now().format(formatter); // Apply format
+            creationDateTime = formattedDateTime;
 
             // Else set the date/time provided form postman/frontend
         } else {
-            creationDateTime = snack.getCreationDateTime().truncatedTo(ChronoUnit.SECONDS);
+            creationDateTime = snack.getCreationDateTimeString();
         }
 
         // Use Snack entity constructor, to generate uuid as id, before save in db
@@ -63,7 +65,7 @@ public class SnackService {
 //        Snack tempSnack = new Snack(snack.getName(), snack.getFlavour(), snack.getWeight(), UUID.randomUUID());
 
         // Example create snack and provide productId-UUID & creation date
-        Snack tempSnack = new Snack(snack.getName(), snack.getFlavour(), snack.getWeight(), UUID.randomUUID(), creationDateTime, snack.getCreationDateTimeString());
+        Snack tempSnack = new Snack(snack.getName(), snack.getFlavour(), snack.getWeight(), UUID.randomUUID(), creationDateTime);
 
         logger.info("Created a snack");
         return snackRepository.save(tempSnack);
@@ -79,14 +81,16 @@ public class SnackService {
                         return Mono.error(new RuntimeException("Duplicate snack found"));
 
                     } else { // If not already exist, set creation logic and save
-                        LocalDateTime creationDateTime;
-                        if (snack.getCreationDateTime() == null) {
-                            creationDateTime = LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS);
+                        String creationDateTime;
+                        if (snack.getCreationDateTimeString() == null) {
+                            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"); // Specify format
+                            String formattedDateTime = LocalDateTime.now().format(formatter); // Apply format
+                            creationDateTime = formattedDateTime;
                         } else {
-                            creationDateTime = snack.getCreationDateTime().truncatedTo(ChronoUnit.SECONDS);
+                            creationDateTime = snack.getCreationDateTimeString();
                         }
 
-                        Snack tempSnack = new Snack(snack.getName(), snack.getFlavour(), snack.getWeight(), UUID.randomUUID(), creationDateTime, snack.getCreationDateTimeString());
+                        Snack tempSnack = new Snack(snack.getName(), snack.getFlavour(), snack.getWeight(), UUID.randomUUID(), creationDateTime);
 
                         return snackRepository.save(tempSnack);
                     }
