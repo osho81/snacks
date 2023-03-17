@@ -5,6 +5,8 @@ import lia.practice.snacks.repository.SnackRepository;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.data.mongodb.core.ReactiveMongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -224,17 +226,59 @@ public class SnackService {
 
     // Use this if NOT have orgId in Snack entity
 //    public Mono<Snack> getByIdFromSpecificColl(String id, UUID orgId) {
-//
-//        snackRepository.findById(UUID.fromString(id));
 //        String collectionName = "assessments_" + orgId;
 //        return reactiveMongoTemplate.findById(UUID.fromString(id), Snack.class, collectionName);
 //    }
 
     // Use this if have orgId in Snack entity
     public Mono<Snack> getByIdFromSpecificColl(String id) {
-        return reactiveMongoTemplate.findById(UUID.fromString(id), Snack.class, collectionName)
-                // If not exist, the task switches from finding to erroring
-                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Snack with id: " + id + " not found")));
+//        return snackRepository.existsById(UUID.fromString(id))
+//        return snackRepository.existsByIdInAllCollections(UUID.fromString(id))
+        return existsByIdInAllCollections(UUID.fromString(id)) // Customized query
+                .flatMap(exists -> {
+                    System.out.println("exists: " + exists);
+                    if (exists) {
+//                        return snackRepository.findByIdInAllCollections(UUID.fromString(id))
+                        return findByIdInAllCollections(UUID.fromString(id))
+
+//                                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND,
+//                                        "Snack with id" + id + " found")));
+////                                .map(snack -> foundSnack);
+////                        System.out.println("my print " + foundSnack);
+
+                                .flatMap(foundSnack -> {
+                                    System.out.println("my print " + foundSnack);
+                                    String collectionName = "assessments_" + foundSnack.getOrgId();
+                                    return reactiveMongoTemplate.findById(UUID.fromString(id), Snack.class, collectionName)
+                                            .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND,
+                                                    "Snack with id" + id + " found in collection " + collectionName)))
+                                            .map(snack -> foundSnack);
+                                });
+                    } else {
+                        return Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Snack not found with id: " + id));
+                    }
+                });
     }
+
+
+    ////---- Utility methods for multiple collections ----////
+    public Mono<Snack> findByIdInAllCollections(UUID id) {
+        Flux<String> collectionNames = reactiveMongoTemplate.getCollectionNames();
+        return collectionNames
+                .doOnNext(collectionName -> System.out.println("Collection name: " + collectionName)) // Control print
+                .flatMap(collectionName -> reactiveMongoTemplate.findById(id, Snack.class, collectionName))
+                .next()
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Snack not found with id: " + id)));
+    }
+
+    public Mono<Boolean> existsByIdInAllCollections(UUID id) {
+        Flux<String> collectionNames = reactiveMongoTemplate.getCollectionNames();
+        return collectionNames
+                .doOnNext(collectionName -> System.out.println("Collection name*: " + collectionName)) // Control print
+                .flatMap(collectionName -> reactiveMongoTemplate.exists(Query.query(Criteria.where("id").is(id)), Snack.class, collectionName))
+                .any(exists -> exists);
+    }
+
+
 
 }

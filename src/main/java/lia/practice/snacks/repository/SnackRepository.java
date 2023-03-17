@@ -16,10 +16,7 @@ public interface SnackRepository extends ReactiveMongoRepository<Snack, UUID> { 
 
     Mono<Boolean> existsByName(String name);
 
-
-
-    ////---- Customized cruds used for multiple collection from same entity ----////
-
+    Mono<Boolean> existsById(UUID id);
 
 
 }
