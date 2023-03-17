@@ -2,14 +2,11 @@ package lia.practice.snacks.utility;
 
 import lia.practice.snacks.model.Snack;
 import lia.practice.snacks.repository.SnackRepository;
+import lia.practice.snacks.service.SnackService;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
-import reactor.core.publisher.Mono;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoUnit;
 import java.util.UUID;
 
 //@Configuration // Enable bean for mockdata on startup
@@ -21,9 +18,11 @@ public class Mockdata {
 
     // Constructor injection
     private final SnackRepository snackRepository;
+    private final SnackService snackService;
 
-    public Mockdata(SnackRepository snackRepository) {
+    public Mockdata(SnackRepository snackRepository, SnackService snackService) {
         this.snackRepository = snackRepository;
+        this.snackService = snackService;
     }
 
 
@@ -42,11 +41,18 @@ public class Mockdata {
             Snack snack5 = new Snack("mock snack 5", "cheese", 50, UUID.randomUUID(), "2023-02-29 22:05:20");
 
             // Use method in this class to create snacks with no duplicate logic
-            createSnackNoDuplicateMock(snack1).subscribe();
-            createSnackNoDuplicateMock(snack2).subscribe();
-            createSnackNoDuplicateMock(snack3).subscribe();
-            createSnackNoDuplicateMock(snack4).subscribe();
-            createSnackNoDuplicateMock(snack5).subscribe();
+//            createSnackNoDuplicateMock(snack1).subscribe();
+//            createSnackNoDuplicateMock(snack2).subscribe();
+//            createSnackNoDuplicateMock(snack3).subscribe();
+//            createSnackNoDuplicateMock(snack4).subscribe();
+//            createSnackNoDuplicateMock(snack5).subscribe();//
+
+            // Use corresponding method in service class
+            snackService.createSnackNoDuplicate(snack1).subscribe();
+            snackService.createSnackNoDuplicate(snack2).subscribe();
+            snackService.createSnackNoDuplicate(snack3).subscribe();
+            snackService.createSnackNoDuplicate(snack4).subscribe();
+            snackService.createSnackNoDuplicate(snack5).subscribe();
 
             // Alternatively, use service method or repository here to create snacks
         };
@@ -55,38 +61,38 @@ public class Mockdata {
 
     // Create method for MOCK data (message + empty error if snack already exists)
     // (Could also be in Service Method, with some slight changes)
-    public Mono<Snack> createSnackNoDuplicateMock(Snack snack) {
-        return snackRepository.existsByName(snack.getName())
-                .flatMap(exists -> {
-                    if (exists) {
-//                        logger.info(snack.getName() + " already exist"); // Use logger
-                        System.out.println(snack.getName() + " already exist");
-
-                        return Mono.empty(); // Compulsory return here, so set to empty
-
-                    } else {
-                        // Handle if date & time is null
-                        String creationDateTime;
-                        if (snack.getCreationDateTimeString() == null) {
-                            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"); // Specify format
-                            String formattedDateTime = LocalDateTime.now().format(formatter); // Apply format
-                            creationDateTime = formattedDateTime;
-                        } else {
-                            creationDateTime = snack.getCreationDateTimeString();
-                        }
-
-                        // uuid is provided in mock creation above
-                        Snack tempSnack = new Snack(snack.getName(), snack.getFlavour(), snack.getWeight(),
-                                snack.getProductId(), creationDateTime);
-
-//                        logger.info(snack.getName() + " created");
-                        System.out.println(snack.getName() + " created");
-
-                        // Save each snack passed into this method
-                        return snackRepository.save(tempSnack);
-                    }
-                });
-    }
+//    public Mono<Snack> createSnackNoDuplicateMock(Snack snack) {
+//        return snackRepository.existsByName(snack.getName())
+//                .flatMap(exists -> {
+//                    if (exists) {
+////                        logger.info(snack.getName() + " already exist"); // Use logger
+//                        System.out.println(snack.getName() + " already exist");
+//
+//                        return Mono.empty(); // Compulsory return here, so set to empty
+//
+//                    } else {
+//                        // Handle if date & time is null
+//                        String creationDateTime;
+//                        if (snack.getCreationDateTimeString() == null) {
+//                            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"); // Specify format
+//                            String formattedDateTime = LocalDateTime.now().format(formatter); // Apply format
+//                            creationDateTime = formattedDateTime;
+//                        } else {
+//                            creationDateTime = snack.getCreationDateTimeString();
+//                        }
+//
+//                        // uuid is provided in mock creation above
+//                        Snack tempSnack = new Snack(snack.getName(), snack.getFlavour(), snack.getWeight(),
+//                                snack.getProductId(), creationDateTime);
+//
+////                        logger.info(snack.getName() + " created");
+//                        System.out.println(snack.getName() + " created");
+//
+//                        // Save each snack passed into this method
+//                        return snackRepository.save(tempSnack);
+//                    }
+//                });
+//    }
 
 
 }

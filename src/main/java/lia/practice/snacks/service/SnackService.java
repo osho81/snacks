@@ -8,6 +8,7 @@ import org.springframework.data.mongodb.core.ReactiveMongoTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -30,6 +31,7 @@ public class SnackService {
     // Constructor injection
     private SnackRepository snackRepository;
     private ReactiveMongoTemplate reactiveMongoTemplate; // Needed for the multiple collections approach
+
     public SnackService(SnackRepository snackRepository, ReactiveMongoTemplate reactiveMongoTemplate) {
         this.snackRepository = snackRepository;
         this.reactiveMongoTemplate = reactiveMongoTemplate; // Needed for the multiple collections approach
@@ -40,12 +42,19 @@ public class SnackService {
         return snackRepository.findAll();
     }
 
+    // Basic get by id
+//    public Mono<Snack> getById(String id) {
+//        return snackRepository.findById(UUID.fromString(id));
+////        return snackRepository.findById(id);
+//    }
+
+    // Get by id with logic/error handle etc
     public Mono<Snack> getById(String id) {
-        System.out.println(id);
-        System.out.println(UUID.fromString(id));
-        return snackRepository.findById(UUID.fromString(id));
-//        return snackRepository.findById(id);
+        return snackRepository.findById(UUID.fromString(id))
+                // If not exist, the task switches from finding to erroring
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Snack with id: " + id + " not found")));
     }
+
 
     public Mono<Snack> createSnack(Snack snack) {
 
@@ -81,7 +90,12 @@ public class SnackService {
         return snackRepository.existsByName(snack.getName())
                 .flatMap(exists -> {
                     if (exists) {
-                        return Mono.error(new RuntimeException("Duplicate snack found"));
+//                        return Mono.error(new RuntimeException("Duplicate snack found"));
+
+//                        logger.info(snack.getName() + " already exist"); // Use logger
+                        System.out.println(snack.getName() + " already exist");
+
+                        return Mono.empty(); // Compulsory return here, so set to empty
 
                     } else { // If not already exist, set creation logic and save
                         String creationDateTime;
@@ -98,6 +112,9 @@ public class SnackService {
 
                         // Provided uuid for productId from postman/frontend etc:
                         Snack tempSnack = new Snack(snack.getName(), snack.getFlavour(), snack.getWeight(), snack.getProductId(), creationDateTime);
+
+//                        logger.info(snack.getName() + " created");
+                        System.out.println(snack.getName() + " created");
 
                         return snackRepository.save(tempSnack);
                     }
@@ -149,32 +166,9 @@ public class SnackService {
     ////---- Methods used for multiple collection from same entity ----////
     ////---- Methods used for multiple collection from same entity ----////
 
-    public Mono<Snack> createSnackInSpecificColl(Snack snack, UUID orgId) {
-
-        // If no date/time is provided, set current date
-        String creationDateTime;
-        if (snack.getCreationDateTimeString() == null) {
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"); // Specify format
-            String formattedDateTime = LocalDateTime.now().format(formatter); // Apply format
-            creationDateTime = formattedDateTime;
-
-            // Else set the date/time provided form postman/frontend
-        } else {
-            creationDateTime = snack.getCreationDateTimeString();
-        }
-
-        Snack tempSnack = new Snack(snack.getName(), snack.getFlavour(), snack.getWeight(), snack.getProductId(), creationDateTime);
-
-        logger.info("Created a snack");
-
-        String collectionName = "assessments_" + orgId; // Create specified collection for this orgId
-
-        // Use reactiveMongoTEMPLATE to save snack into org-specific collection
-        return reactiveMongoTemplate.save(tempSnack, collectionName); // second arg = collection to save to
-    }
-
-    // Use this if have orgId in Snack entity
-//    public Mono<Snack> createSnackInSpecificCollWithoutPathVar(Snack snack) {
+    // Use this if NOT have orgId in Snack entity
+//    public Mono<Snack> createSnackInSpecificColl(Snack snack, UUID orgId) {
+//
 //        // If no date/time is provided, set current date
 //        String creationDateTime;
 //        if (snack.getCreationDateTimeString() == null) {
@@ -191,11 +185,35 @@ public class SnackService {
 //
 //        logger.info("Created a snack");
 //
-//        String collectionName = "assessments_" + snack.getOrgId();
+//        String collectionName = "assessments_" + orgId; // Create specified collection for this orgId
 //
 //        // Use reactiveMongoTEMPLATE to save snack into org-specific collection
 //        return reactiveMongoTemplate.save(tempSnack, collectionName); // second arg = collection to save to
 //    }
+
+    // Use this if have orgId in Snack entity
+    public Mono<Snack> createSnackInSpecificCollWithoutPathVar(Snack snack) {
+        // If no date/time is provided, set current date
+        String creationDateTime;
+        if (snack.getCreationDateTimeString() == null) {
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"); // Specify format
+            String formattedDateTime = LocalDateTime.now().format(formatter); // Apply format
+            creationDateTime = formattedDateTime;
+
+            // Else set the date/time provided form postman/frontend
+        } else {
+            creationDateTime = snack.getCreationDateTimeString();
+        }
+
+        Snack tempSnack = new Snack(snack.getOrgId(), snack.getName(), snack.getFlavour(), snack.getWeight(), snack.getProductId(), creationDateTime);
+
+        logger.info("Created a snack");
+
+        String collectionName = "assessments_" + snack.getOrgId();
+
+        // Use reactiveMongoTEMPLATE to save snack into org-specific collection
+        return reactiveMongoTemplate.save(tempSnack, collectionName); // second arg = collection to save to
+    }
 
     public Flux<Snack> getAllSnacksFromSpecificColl(UUID orgId) {
         logger.info("Get all snacks");
@@ -204,6 +222,8 @@ public class SnackService {
     }
 
     public Mono<Snack> getByIdFromSpecificColl(String id, UUID orgId) {
+
+        snackRepository.findById(UUID.fromString(id));
         String collectionName = "assessments_" + orgId;
         return reactiveMongoTemplate.findById(UUID.fromString(id), Snack.class, collectionName);
     }

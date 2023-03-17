@@ -3,20 +3,19 @@ package lia.practice.snacks.model;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.time.LocalDateTime;
 import java.util.UUID;
 
 // Annotation declaring this as a mongoDB entity to create records from,
 // and value is name of the collection
 @Document (value = "snacks")
-//@Document // Without value, when creating multiple collections
+//@Document // Better without value, when creating multiple collections
 public class Snack {
 
     @Id
     private UUID id; // If UUID in SnackRepository
     // private String id; // If String in SnackRepository
 
-//    private UUID orgId; // Possible to include this
+    private UUID orgId; // used to create specific collections
 
     private UUID productId;
 
@@ -64,6 +63,17 @@ public class Snack {
         this.creationDateTimeString = creationDateTimeString;
     }
 
+    // Constructor including orgId as well
+    public Snack(UUID orgId, String name, String flavour, double weight, UUID productId, String creationDateTimeString) {
+        this.orgId = orgId; // orgId, used to create specific collection
+        this.id = UUID.randomUUID();
+        this.name = name;
+        this.flavour = flavour;
+        this.weight = weight;
+        this.productId = productId; // Example assigning provided UUID
+        this.creationDateTimeString = creationDateTimeString;
+    }
+
 
 //    public String getId() {
 //        return id;
@@ -79,6 +89,14 @@ public class Snack {
 
     public void setId(UUID id) {
         this.id = id;
+    }
+
+    // orgId, used to create specific collection
+    public UUID getOrgId() {
+        return orgId;
+    }
+    public void setOrgId(UUID orgId) {
+        this.orgId = orgId;
     }
 
     public String getName() {
