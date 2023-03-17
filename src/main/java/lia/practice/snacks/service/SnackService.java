@@ -232,7 +232,7 @@ public class SnackService {
 
     // Use this if have orgId in Snack entity
     public Mono<Snack> getByIdFromSpecificColl(String id) {
-        return snackRepository.findById(UUID.fromString(id))
+        return reactiveMongoTemplate.findById(UUID.fromString(id), Snack.class, collectionName)
                 // If not exist, the task switches from finding to erroring
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Snack with id: " + id + " not found")));
     }

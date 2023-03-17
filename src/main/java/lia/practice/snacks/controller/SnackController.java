@@ -110,21 +110,21 @@ public class SnackController {
     }
 
     // Get all snacks is same, regardless if orgId is snack-field or as pathvar
-//    @GetMapping("/{orgId}")
-//    public Flux<Snack> getAllSnacksFromSpecificColl(@PathVariable UUID orgId) {
-//
-//        logger.info("Entering getAllSnacksFromSpecificColl() method");
-//
-//        Flux<Snack> snacks = snackService.getAllSnacksFromSpecificColl(orgId);
-//
-//        snacks.doOnComplete(() -> logger.trace("Finished retrieving all snacks"))
-//                .doOnError(error -> logger.error("Error occurred while retrieving snacks: {}", error.getMessage()))
-//                .doOnNext(snack -> logger.trace("Retrieved snack: {}", snack.getId()))
-//                .subscribe();
-//
-//        logger.trace("Leaving getAllSnacksFromSpecificColl() method");
-//        return snacks;
-//    }
+    @GetMapping("/{orgId}")
+    public Flux<Snack> getAllSnacksFromSpecificColl(@PathVariable UUID orgId) {
+
+        logger.info("Entering getAllSnacksFromSpecificColl() method");
+
+        Flux<Snack> snacks = snackService.getAllSnacksFromSpecificColl(orgId);
+
+        snacks.doOnComplete(() -> logger.trace("Finished retrieving all snacks"))
+                .doOnError(error -> logger.error("Error occurred while retrieving snacks: {}", error.getMessage()))
+                .doOnNext(snack -> logger.trace("Retrieved snack: {}", snack.getId()))
+                .subscribe();
+
+        logger.trace("Leaving getAllSnacksFromSpecificColl() method");
+        return snacks;
+    }
 
     // Use this if NOT have orgId in Snack entity
 //    @GetMapping("/snackbyid/{id}/{orgId}")
