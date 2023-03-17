@@ -9,11 +9,14 @@ import java.util.UUID;
 // Annotation declaring this as a mongoDB entity to create records from,
 // and value is name of the collection
 @Document (value = "snacks")
+//@Document // Without value, when creating multiple collections
 public class Snack {
 
     @Id
     private UUID id; // If UUID in SnackRepository
     // private String id; // If String in SnackRepository
+
+//    private UUID orgId; // Possible to include this
 
     private UUID productId;
 

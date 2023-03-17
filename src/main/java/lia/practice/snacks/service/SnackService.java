@@ -4,6 +4,7 @@ import lia.practice.snacks.model.Snack;
 import lia.practice.snacks.repository.SnackRepository;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.data.mongodb.core.ReactiveMongoTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -27,9 +28,11 @@ public class SnackService {
 //    private SnackRepository snackRepository;
 
     // Constructor injection
-    private final SnackRepository snackRepository;
-    public SnackService(SnackRepository snackRepository) {
+    private SnackRepository snackRepository;
+    private ReactiveMongoTemplate reactiveMongoTemplate; // Needed for the multiple collections approach
+    public SnackService(SnackRepository snackRepository, ReactiveMongoTemplate reactiveMongoTemplate) {
         this.snackRepository = snackRepository;
+        this.reactiveMongoTemplate = reactiveMongoTemplate; // Needed for the multiple collections approach
     }
 
     public Flux<Snack> getAllSnacks() {
@@ -90,7 +93,11 @@ public class SnackService {
                             creationDateTime = snack.getCreationDateTimeString();
                         }
 
-                        Snack tempSnack = new Snack(snack.getName(), snack.getFlavour(), snack.getWeight(), UUID.randomUUID(), creationDateTime);
+                        // Generate uuid for productId here:
+//                        Snack tempSnack = new Snack(snack.getName(), snack.getFlavour(), snack.getWeight(), UUID.randomUUID(), creationDateTime);
+
+                        // Provided uuid for productId from postman/frontend etc:
+                        Snack tempSnack = new Snack(snack.getName(), snack.getFlavour(), snack.getWeight(), snack.getProductId(), creationDateTime);
 
                         return snackRepository.save(tempSnack);
                     }
@@ -136,4 +143,69 @@ public class SnackService {
         return snackRepository.deleteById(UUID.fromString(id));
 //        return snackRepository.deleteById(id);
     }
+
+
+    ////---- Methods used for multiple collection from same entity ----////
+    ////---- Methods used for multiple collection from same entity ----////
+    ////---- Methods used for multiple collection from same entity ----////
+
+    public Mono<Snack> createSnackInSpecificColl(Snack snack, UUID orgId) {
+
+        // If no date/time is provided, set current date
+        String creationDateTime;
+        if (snack.getCreationDateTimeString() == null) {
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"); // Specify format
+            String formattedDateTime = LocalDateTime.now().format(formatter); // Apply format
+            creationDateTime = formattedDateTime;
+
+            // Else set the date/time provided form postman/frontend
+        } else {
+            creationDateTime = snack.getCreationDateTimeString();
+        }
+
+        Snack tempSnack = new Snack(snack.getName(), snack.getFlavour(), snack.getWeight(), snack.getProductId(), creationDateTime);
+
+        logger.info("Created a snack");
+
+        String collectionName = "assessments_" + orgId; // Create specified collection for this orgId
+
+        // Use reactiveMongoTEMPLATE to save snack into org-specific collection
+        return reactiveMongoTemplate.save(tempSnack, collectionName); // second arg = collection to save to
+    }
+
+    // Use this if have orgId in Snack entity
+//    public Mono<Snack> createSnackInSpecificCollWithoutPathVar(Snack snack) {
+//        // If no date/time is provided, set current date
+//        String creationDateTime;
+//        if (snack.getCreationDateTimeString() == null) {
+//            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"); // Specify format
+//            String formattedDateTime = LocalDateTime.now().format(formatter); // Apply format
+//            creationDateTime = formattedDateTime;
+//
+//            // Else set the date/time provided form postman/frontend
+//        } else {
+//            creationDateTime = snack.getCreationDateTimeString();
+//        }
+//
+//        Snack tempSnack = new Snack(snack.getName(), snack.getFlavour(), snack.getWeight(), snack.getProductId(), creationDateTime);
+//
+//        logger.info("Created a snack");
+//
+//        String collectionName = "assessments_" + snack.getOrgId();
+//
+//        // Use reactiveMongoTEMPLATE to save snack into org-specific collection
+//        return reactiveMongoTemplate.save(tempSnack, collectionName); // second arg = collection to save to
+//    }
+
+    public Flux<Snack> getAllSnacksFromSpecificColl(UUID orgId) {
+        logger.info("Get all snacks");
+        String collectionName = "assessments_" + orgId;
+        return reactiveMongoTemplate.findAll(Snack.class, collectionName);
+    }
+
+    public Mono<Snack> getByIdFromSpecificColl(String id, UUID orgId) {
+        String collectionName = "assessments_" + orgId;
+        return reactiveMongoTemplate.findById(UUID.fromString(id), Snack.class, collectionName);
+    }
+
 }
