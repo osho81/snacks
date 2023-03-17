@@ -28,6 +28,7 @@ public class SnackController {
 
     // Constructor injection
     private final SnackService snackService;
+
     public SnackController(SnackService snackService) {
         this.snackService = snackService;
     }
@@ -88,7 +89,6 @@ public class SnackController {
     }
 
 
-
     ////---- Methods used for multiple collection from same entity ----////
     ////---- Methods used for multiple collection from same entity ----////
     ////---- Methods used for multiple collection from same entity ----////
@@ -109,7 +109,7 @@ public class SnackController {
         return snackService.createSnackInSpecificCollWithoutPathVar(snack);
     }
 
-    // Get all is same, regardless if orgId is snack-field or as pathvar
+    // Get all snacks is same, regardless if orgId is snack-field or as pathvar
 //    @GetMapping("/{orgId}")
 //    public Flux<Snack> getAllSnacksFromSpecificColl(@PathVariable UUID orgId) {
 //
@@ -127,16 +127,18 @@ public class SnackController {
 //    }
 
     // Use this if NOT have orgId in Snack entity
-    @GetMapping("/snackbyid/{id}/{orgId}")
-    public Mono<Snack> getByIdFromSpecificColl(@PathVariable String id, @PathVariable UUID orgId) {
-        return snackService.getByIdFromSpecificColl(id, orgId);
-    }
+//    @GetMapping("/snackbyid/{id}/{orgId}")
+//    public Mono<Snack> getByIdFromSpecificColl(@PathVariable String id, @PathVariable UUID orgId) {
+//        return snackService.getByIdFromSpecificColl(id, orgId);
+//    }
 
     // Use this if have orgId in Snack entity
-//    @GetMapping("/snackbyid/{id}/{orgId}")
-//    public Mono<Snack> getByIdFromSpecificColl(@PathVariable String id) {
-//        return snackService.getByIdFromSpecificColl(id);
-//    }
+    @GetMapping("/snackbyid/specificcoll/{id}")
+    public Mono<ResponseEntity<Snack>> getByIdFromSpecificColl(@PathVariable String id) {
+        return snackService.getByIdFromSpecificColl(id)
+                .map(ResponseEntity::ok)
+                .onErrorResume(ResponseStatusException.class, e -> Mono.just(ResponseEntity.status(e.getStatusCode()).build()));
+    }
 
 
 }

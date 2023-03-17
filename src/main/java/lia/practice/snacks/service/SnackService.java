@@ -215,17 +215,26 @@ public class SnackService {
         return reactiveMongoTemplate.save(tempSnack, collectionName); // second arg = collection to save to
     }
 
+    // Get all snacks is same, regardless if orgId is snack-field or as pathvar
     public Flux<Snack> getAllSnacksFromSpecificColl(UUID orgId) {
         logger.info("Get all snacks");
         String collectionName = "assessments_" + orgId;
         return reactiveMongoTemplate.findAll(Snack.class, collectionName);
     }
 
-    public Mono<Snack> getByIdFromSpecificColl(String id, UUID orgId) {
+    // Use this if NOT have orgId in Snack entity
+//    public Mono<Snack> getByIdFromSpecificColl(String id, UUID orgId) {
+//
+//        snackRepository.findById(UUID.fromString(id));
+//        String collectionName = "assessments_" + orgId;
+//        return reactiveMongoTemplate.findById(UUID.fromString(id), Snack.class, collectionName);
+//    }
 
-        snackRepository.findById(UUID.fromString(id));
-        String collectionName = "assessments_" + orgId;
-        return reactiveMongoTemplate.findById(UUID.fromString(id), Snack.class, collectionName);
+    // Use this if have orgId in Snack entity
+    public Mono<Snack> getByIdFromSpecificColl(String id) {
+        return snackRepository.findById(UUID.fromString(id))
+                // If not exist, the task switches from finding to erroring
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Snack with id: " + id + " not found")));
     }
 
 }
