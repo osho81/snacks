@@ -94,10 +94,14 @@ public class SnackService {
                     if (exists) {
 //                        return Mono.error(new RuntimeException("Duplicate snack found"));
 
-//                        logger.info(snack.getName() + " already exist"); // Use logger
-                        System.out.println(snack.getName() + " already exist");
+                        logger.info(snack.getName() + " already exist"); // Use logger
+//                        System.out.println(snack.getName() + " already exist");
 
                         return Mono.empty(); // Compulsory return here, so set to empty
+                        // Or use springboot specific exception:
+//                        return Mono.error(new ResponseStatusException(HttpStatus.CONFLICT, snack.getName() + " already exist"));
+                        // Or ordinary runtimeexception:
+//                        return Mono.error(new RuntimeException("Duplicate snack found"));
 
                     } else { // If not already exist, set creation logic and save
                         String creationDateTime;
@@ -115,8 +119,8 @@ public class SnackService {
                         // Provided uuid for productId from postman/frontend etc:
                         Snack tempSnack = new Snack(snack.getName(), snack.getFlavour(), snack.getWeight(), snack.getProductId(), creationDateTime);
 
-//                        logger.info(snack.getName() + " created");
-                        System.out.println(snack.getName() + " created");
+                        logger.info(snack.getName() + " created");
+//                        System.out.println(snack.getName() + " created");
 
                         return snackRepository.save(tempSnack);
                     }
@@ -158,9 +162,19 @@ public class SnackService {
                 .defaultIfEmpty(new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
+//    public Mono<Void> deleteById(String id) {
+//        return snackRepository.deleteById(UUID.fromString(id));
+////        return snackRepository.deleteById(id);
+//    }
+
+    // Delete by id with logic, error etc
     public Mono<Void> deleteById(String id) {
-        return snackRepository.deleteById(UUID.fromString(id));
-//        return snackRepository.deleteById(id);
+        return snackRepository.deleteById(UUID.fromString(id))
+                .doOnSuccess(result -> logger.info("Snack with id {} has been deleted", id)) // Placeholder
+                .doOnError(error -> {
+                    logger.error("Failed to delete snack with id {}: {}", id, error.getMessage());
+                    throw new RuntimeException("Failed to delete snack");
+                });
     }
 
 
@@ -245,7 +259,11 @@ public class SnackService {
 //                        Snack tempSnack = new Snack(snack.getName(), snack.getFlavour(), snack.getWeight(), UUID.randomUUID(), creationDateTime);
 
                         // Provided uuid for productId from postman/frontend etc:
-                        Snack tempSnack = new Snack(snack.getName(), snack.getFlavour(), snack.getWeight(), snack.getProductId(), creationDateTime);
+//                        Snack tempSnack = new Snack(snack.getName(), snack.getFlavour(), snack.getWeight(), snack.getProductId(), creationDateTime);
+
+                        // Also include orgId
+                        Snack tempSnack = new Snack(snack.getOrgId(), snack.getName(), snack.getFlavour(), snack.getWeight(), snack.getProductId(), creationDateTime);
+
 
 //                        logger.info(snack.getName() + " created");
                         System.out.println(snack.getName() + " created");
@@ -258,11 +276,21 @@ public class SnackService {
     }
 
 
-    // Get all snacks is same, regardless if orgId is snack-field or as pathvar
-    public Flux<Snack> getAllSnacksFromSpecificColl(UUID orgId) {
-        logger.info("Get all snacks");
-        String collectionName = "assessments_" + orgId;
-        return reactiveMongoTemplate.findAll(Snack.class, collectionName);
+    // Use this if NOT have orgId in Snack entity
+//    public Flux<Snack> getAllSnacksFromSpecificColl(UUID orgId) {
+//        logger.info("Get all snacks");
+//        String collectionName = "assessments_" + orgId;
+//        return reactiveMongoTemplate.findAll(Snack.class, collectionName);
+//    }
+
+    // Use this if have orgId in Snack entity
+    public Flux<Snack> getAllSnacksFromSpecificColl(String id) {
+        return findByIdInAllCollections(UUID.fromString(id)) // Find/get it by id
+                .flatMapMany(foundSnack -> { // Not flatMapMany, mono to flux
+                    // Use the Snack's orgId to find its collection, get all snacks in it
+                    String collectionName = "assessments_" + foundSnack.getOrgId();
+                    return reactiveMongoTemplate.findAll(Snack.class, collectionName);
+                });
     }
 
     // Use this if NOT have orgId in Snack entity
@@ -293,10 +321,29 @@ public class SnackService {
                     }
                 })
                 // Optional printout of eventual error
-                .doOnError(error -> logger.error("Error occurred while retrieving snacks: {}", error.getMessage()));
+                .doOnError(error -> logger.error("Error while retrieving snack: {}", error.getMessage()));
+    }
+
+    // Delete by ID in ANY collection
+    public Mono<Void> deleteByIdInAllColl(String id) {
+        return findByIdInAllCollections(UUID.fromString(id)) // Find/get it by id
+                .flatMap(foundSnack -> {
+                    String collectionName = "assessments_" + foundSnack.getOrgId();
+                    // Note that reactiveMongoTemlate delete in specific coll, uses remove()
+                    // Also note that it requires the Snack object, not its id
+                    return reactiveMongoTemplate.remove(foundSnack, collectionName)
+                            .doOnSuccess(result -> logger.info("Snack with id {} has been deleted", id)) // Placeholder
+                            .doOnError(error -> {
+                                logger.error("Failed to delete snack with id {}: {}", id, error.getMessage());
+                                throw new RuntimeException("Failed to delete snack");
+                            });
+                })
+                // Convert nested mono from flatMap into single mono:
+                .then();
     }
 
 
+    ////---- Utility methods for multiple collections ----////
     ////---- Utility methods for multiple collections ----////
 
     // Method for finding by id in ALL collections
@@ -310,7 +357,7 @@ public class SnackService {
 //                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Snack with id: " + id + " not found")));
     }
 
-    // Method for checking by id if exists in ANY of the collections
+    // Method for checking by ID if exists in ANY of the collections
     public Mono<Boolean> existsByIdInAllCollections(UUID id) {
         Flux<String> collectionNames = reactiveMongoTemplate.getCollectionNames(); // Get all collections
         return collectionNames
@@ -320,7 +367,7 @@ public class SnackService {
                 .any(exists -> exists); // Returns true if any of the collections includes this snack
     }
 
-    // Method for checking by name if exists in ANY of the collections
+    // Method for checking by NAME if exists in ANY of the collections
     public Mono<Boolean> existsByNameInAllCollections(String name) {
         Flux<String> collectionNames = reactiveMongoTemplate.getCollectionNames(); // Get all collections
         return collectionNames

@@ -60,7 +60,8 @@ public class Mockdata {
             snackService.createInSpecificCollWithoutPathVarSnackNoDuplicate(snack2).subscribe();
             snackService.createInSpecificCollWithoutPathVarSnackNoDuplicate(snack3).subscribe();
             snackService.createInSpecificCollWithoutPathVarSnackNoDuplicate(snack4).subscribe();
-            snackService.createSnackNoDuplicate(snack5).subscribe(); // snack5 saved to default coll
+            snackService.createInSpecificCollWithoutPathVarSnackNoDuplicate(snack5).subscribe();
+//            snackService.createSnackNoDuplicate(snack5).subscribe(); // snack5 saved to default coll
         };
 
     }
