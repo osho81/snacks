@@ -217,6 +217,47 @@ public class SnackService {
         return reactiveMongoTemplate.save(tempSnack, collectionName); // second arg = collection to save to
     }
 
+    // Checks if ealready exists in ANY of the collections
+    public Mono<Snack> createInSpecificCollWithoutPathVarSnackNoDuplicate(Snack snack) {
+        // Check if snack already exists in MongoDB
+        // Use existByName method in this service class, that returns a boolean
+        return existsByNameInAllCollections(snack.getName())
+                .flatMap(exists -> {
+                    if (exists) {
+//                        return Mono.error(new RuntimeException("Duplicate snack found"));
+
+//                        logger.info(snack.getName() + " already exist"); // Use logger
+                        System.out.println(snack.getName() + " already exist");
+
+                        return Mono.empty(); // Compulsory return here, so set to empty
+
+                    } else { // If not already exist, set creation logic and save
+                        String creationDateTime;
+                        if (snack.getCreationDateTimeString() == null) {
+                            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"); // Specify format
+                            String formattedDateTime = LocalDateTime.now().format(formatter); // Apply format
+                            creationDateTime = formattedDateTime;
+                        } else {
+                            creationDateTime = snack.getCreationDateTimeString();
+                        }
+
+                        // Generate uuid for productId here:
+//                        Snack tempSnack = new Snack(snack.getName(), snack.getFlavour(), snack.getWeight(), UUID.randomUUID(), creationDateTime);
+
+                        // Provided uuid for productId from postman/frontend etc:
+                        Snack tempSnack = new Snack(snack.getName(), snack.getFlavour(), snack.getWeight(), snack.getProductId(), creationDateTime);
+
+//                        logger.info(snack.getName() + " created");
+                        System.out.println(snack.getName() + " created");
+
+                        String collectionName = "assessments_" + snack.getOrgId();
+                        // Use reactiveMongoTEMPLATE to save snack into org-specific collection
+                        return reactiveMongoTemplate.save(tempSnack, collectionName); // second arg = collection to save to
+                    }
+                });
+    }
+
+
     // Get all snacks is same, regardless if orgId is snack-field or as pathvar
     public Flux<Snack> getAllSnacksFromSpecificColl(UUID orgId) {
         logger.info("Get all snacks");
@@ -232,53 +273,61 @@ public class SnackService {
 
     // Use this if have orgId in Snack entity
     public Mono<Snack> getByIdFromSpecificColl(String id) {
-//        return snackRepository.existsById(UUID.fromString(id))
-//        return snackRepository.existsByIdInAllCollections(UUID.fromString(id))
-        return existsByIdInAllCollections(UUID.fromString(id)) // Customized query
-                .flatMap(exists -> {
+        return existsByIdInAllCollections(UUID.fromString(id)) // Call method for checking if exist
+                .flatMap(exists -> { // Check if exists could be redundant; enough to find by id
                     System.out.println("exists: " + exists);
                     if (exists) {
-//                        return snackRepository.findByIdInAllCollections(UUID.fromString(id))
+                        // Call the method for finding it in all collections (and get it)
                         return findByIdInAllCollections(UUID.fromString(id))
-
-//                                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND,
-//                                        "Snack with id" + id + " found")));
-////                                .map(snack -> foundSnack);
-////                        System.out.println("my print " + foundSnack);
-
                                 .flatMap(foundSnack -> {
                                     System.out.println("my print " + foundSnack);
                                     String collectionName = "assessments_" + foundSnack.getOrgId();
                                     return reactiveMongoTemplate.findById(UUID.fromString(id), Snack.class, collectionName)
-                                            .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND,
-                                                    "Snack with id" + id + " found in collection " + collectionName)))
+                                            // If exsts, it will be found; redundant error:
+//                                            .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND,
+//                                                    "Snack with id" + id + " not found in collection " + collectionName)))
                                             .map(snack -> foundSnack);
                                 });
                     } else {
-                        return Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Snack not found with id: " + id));
+                        return Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Snack with id: " + id + " not found"));
                     }
-                });
+                })
+                // Optional printout of eventual error
+                .doOnError(error -> logger.error("Error occurred while retrieving snacks: {}", error.getMessage()));
     }
 
 
     ////---- Utility methods for multiple collections ----////
+
+    // Method for finding by id in ALL collections
     public Mono<Snack> findByIdInAllCollections(UUID id) {
-        Flux<String> collectionNames = reactiveMongoTemplate.getCollectionNames();
+        Flux<String> collectionNames = reactiveMongoTemplate.getCollectionNames(); // Get all collections
         return collectionNames
                 .doOnNext(collectionName -> System.out.println("Collection name: " + collectionName)) // Control print
+                // Check if exists in each of the retrieved collections:
                 .flatMap(collectionName -> reactiveMongoTemplate.findById(id, Snack.class, collectionName))
-                .next()
-                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Snack not found with id: " + id)));
+                .next(); // Get only first one, in case there are duplicates; "flux is transformed to mono"
+//                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Snack with id: " + id + " not found")));
     }
 
+    // Method for checking by id if exists in ANY of the collections
     public Mono<Boolean> existsByIdInAllCollections(UUID id) {
-        Flux<String> collectionNames = reactiveMongoTemplate.getCollectionNames();
+        Flux<String> collectionNames = reactiveMongoTemplate.getCollectionNames(); // Get all collections
         return collectionNames
                 .doOnNext(collectionName -> System.out.println("Collection name*: " + collectionName)) // Control print
+                // Check if exists in each of the retrieved collections:
                 .flatMap(collectionName -> reactiveMongoTemplate.exists(Query.query(Criteria.where("id").is(id)), Snack.class, collectionName))
-                .any(exists -> exists);
+                .any(exists -> exists); // Returns true if any of the collections includes this snack
     }
 
-
+    // Method for checking by name if exists in ANY of the collections
+    public Mono<Boolean> existsByNameInAllCollections(String name) {
+        Flux<String> collectionNames = reactiveMongoTemplate.getCollectionNames(); // Get all collections
+        return collectionNames
+                .doOnNext(collectionName -> System.out.println("Collection name*: " + collectionName)) // Control print
+                // Check if exists in each of the retrieved collections:
+                .flatMap(collectionName -> reactiveMongoTemplate.exists(Query.query(Criteria.where("name").is(name)), Snack.class, collectionName))
+                .any(exists -> exists); // Returns true if any of the collections includes this snack
+    }
 
 }

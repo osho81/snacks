@@ -65,8 +65,8 @@ public class Snack {
 
     // Constructor including orgId as well
     public Snack(UUID orgId, String name, String flavour, double weight, UUID productId, String creationDateTimeString) {
-        this.orgId = orgId; // orgId, used to create specific collection
         this.id = UUID.randomUUID();
+        this.orgId = orgId; // orgId, used to create specific collection
         this.name = name;
         this.flavour = flavour;
         this.weight = weight;
