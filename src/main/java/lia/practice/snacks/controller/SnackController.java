@@ -70,9 +70,21 @@ public class SnackController {
         return snackService.updateSnackNoDuplicate(id, snack); // Using the no duplicate name logic
     }
 
+//    @DeleteMapping("/deletesnacks/{id}")
+//    public Mono<Void> deleteById(@PathVariable String id) {
+//        return snackService.deleteById(id);
+//    }
+
+    // Delete with ResponseEntity
     @DeleteMapping("/deletesnacks/{id}")
-    public Mono<Void> deleteById(@PathVariable String id) {
-        return snackService.deleteById(id);
+    public Mono<ResponseEntity<Void>> deleteById(@PathVariable String id) {
+        return snackService.deleteById(id)
+                .then(Mono.just(ResponseEntity.noContent().build()))
+                .onErrorResume(error -> {
+                    logger.error("Failed to delete snack with id {}: {}", id, error.getMessage());
+                    return Mono.just(ResponseEntity.notFound().build());
+                })
+                .map(response -> ResponseEntity.status(response.getStatusCode()).build());
     }
 
 }

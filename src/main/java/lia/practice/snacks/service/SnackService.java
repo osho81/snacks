@@ -4,9 +4,11 @@ import lia.practice.snacks.model.Snack;
 import lia.practice.snacks.repository.SnackRepository;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -28,6 +30,7 @@ public class SnackService {
 
     // Constructor injection
     private final SnackRepository snackRepository;
+
     public SnackService(SnackRepository snackRepository) {
         this.snackRepository = snackRepository;
     }
@@ -132,8 +135,33 @@ public class SnackService {
                 .defaultIfEmpty(new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
+//    public Mono<Void> deleteById(String id) {
+//        return snackRepository.deleteById(UUID.fromString(id));
+////        return snackRepository.deleteById(id);
+//    }
+
+    // Delete with error handle
+//    public Mono<Void> deleteById(String id) {
+//        return snackRepository.deleteById(UUID.fromString(id))
+//                .doOnSuccess(result -> logger.info("Snack with id {} has been deleted", id)) // Placeholder
+//                .doOnError(error -> {
+//                    logger.error("Failed to delete snack with id {}: {}", id, error.getMessage());
+//                    throw new RuntimeException("Failed to delete snack");
+//                });
+//    }
+
     public Mono<Void> deleteById(String id) {
-        return snackRepository.deleteById(UUID.fromString(id));
-//        return snackRepository.deleteById(id);
+        return snackRepository.findById(UUID.fromString(id))
+                .flatMap(existing -> snackRepository.deleteById(UUID.fromString(id))
+                        .doOnSuccess(result -> logger.info("Snack with id {} has been deleted", id)))
+                .switchIfEmpty(Mono.defer(() -> {
+                    logger.info("No snack found with id {}", id);
+                    return Mono.empty();
+                }))
+                .onErrorResume(error -> {
+                    logger.error("Failed to delete snack with id {}: {}", id, error.getMessage());
+                    return Mono.error(new RuntimeException("Failed to delete snack"));
+                });
+
+
     }
-}
