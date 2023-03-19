@@ -150,10 +150,18 @@ public class SnackService {
 //                });
 //    }
 
+    // This method correctly tells if successfully deleted, but however always returns not found
     public Mono<Void> deleteById(String id) {
-        return snackRepository.findById(UUID.fromString(id))
-                .flatMap(existing -> snackRepository.deleteById(UUID.fromString(id))
-                        .doOnSuccess(result -> logger.info("Snack with id {} has been deleted", id)))
+        return snackRepository.deleteById(UUID.fromString(id))
+                .flatMap(result -> {
+                    if (result == null) {
+                        logger.info("No snack found with id {}", id);
+                        return Mono.empty();
+                    } else {
+                        return Mono.just(result);
+                    }
+                })
+                .doOnSuccess(result -> logger.info("Snack with id {} has been deleted", id))
                 .switchIfEmpty(Mono.defer(() -> {
                     logger.info("No snack found with id {}", id);
                     return Mono.empty();
@@ -161,7 +169,15 @@ public class SnackService {
                 .onErrorResume(error -> {
                     logger.error("Failed to delete snack with id {}: {}", id, error.getMessage());
                     return Mono.error(new RuntimeException("Failed to delete snack"));
-                });
-
-
+                }).then();
     }
+
+
+
+
+
+
+//, isPresent()
+//     .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Snack with id: " + id + " not found")));
+
+}
