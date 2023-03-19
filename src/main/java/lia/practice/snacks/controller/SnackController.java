@@ -84,8 +84,9 @@ public class SnackController {
         return snackService.createSnackNoDuplicate(snack)
                 // On success return response incl. saved snack
                 .map(savedSnack -> ResponseEntity.status(HttpStatus.CREATED).body(savedSnack))
-                // On error throw error
+                // Generic exception handle:
 //                .onErrorResume(throwable -> Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build()));
+                // Specific exception handle with status and optional message:
                .onErrorResume(ResponseStatusException.class, e -> Mono.just(ResponseEntity.status(e.getStatusCode()).build()));
     }
 
