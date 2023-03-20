@@ -155,23 +155,22 @@ public class SnackService {
         return snackRepository.deleteById(UUID.fromString(id))
                 .flatMap(result -> {
                     if (result == null) {
-                        logger.info("No snack found with id {}", id);
+                        logger.info("*No snack found with id {}", id);
                         return Mono.empty();
                     } else {
                         return Mono.just(result);
                     }
                 })
-                .doOnSuccess(result -> logger.info("Snack with id {} has been deleted", id))
                 .switchIfEmpty(Mono.defer(() -> {
-                    logger.info("No snack found with id {}", id);
-                    return Mono.empty();
+                    logger.info("**No snack found with id {}", id);
+                    return Mono.error(new RuntimeException("No snack found with id " + id));
                 }))
+                .doOnSuccess(result -> logger.info("Snack with id {} has been deleted", id))
                 .onErrorResume(error -> {
                     logger.error("Failed to delete snack with id {}: {}", id, error.getMessage());
                     return Mono.error(new RuntimeException("Failed to delete snack"));
                 }).then();
     }
-
 
 
 
