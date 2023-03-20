@@ -77,14 +77,18 @@ public class SnackController {
 
     // DeleteById with ResponseEntity
     @DeleteMapping("/deletesnacks/{id}")
+//    @ResponseStatus(HttpStatus.NO_CONTENT) // Or use this
     public Mono<ResponseEntity<Void>> deleteById(@PathVariable String id) {
         return snackService.deleteById(id)
+                // Return empty mono/void only to signal completion
                 .then(Mono.just(ResponseEntity.noContent().build()))
+                // If error, signal failure instead
                 .onErrorResume(error -> {
                     // If error is returned from service, handle error here as well
                     logger.error("Failed to delete snack with id {}: {}", id, error.getMessage());
                     return Mono.just(ResponseEntity.notFound().build());
                 })
+                // Return response returned from either completion of failure
                 .map(response -> ResponseEntity.status(response.getStatusCode()).build());
     }
 
