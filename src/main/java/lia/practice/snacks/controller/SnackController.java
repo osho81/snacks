@@ -75,12 +75,13 @@ public class SnackController {
 //        return snackService.deleteById(id);
 //    }
 
-    // Delete with ResponseEntity
+    // DeleteById with ResponseEntity
     @DeleteMapping("/deletesnacks/{id}")
     public Mono<ResponseEntity<Void>> deleteById(@PathVariable String id) {
         return snackService.deleteById(id)
                 .then(Mono.just(ResponseEntity.noContent().build()))
                 .onErrorResume(error -> {
+                    // If error is returned from service, handle error here as well
                     logger.error("Failed to delete snack with id {}: {}", id, error.getMessage());
                     return Mono.just(ResponseEntity.notFound().build());
                 })

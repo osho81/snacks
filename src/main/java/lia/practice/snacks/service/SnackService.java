@@ -152,31 +152,23 @@ public class SnackService {
 
     // This method correctly tells if successfully deleted, but however always returns not found
     public Mono<Void> deleteById(String id) {
-        return snackRepository.deleteById(UUID.fromString(id))
-                .flatMap(result -> {
-                    if (result == null) {
-                        logger.info("*No snack found with id {}", id);
-                        return Mono.empty();
-                    } else {
-                        return Mono.just(result);
+        return snackRepository.existsById(UUID.fromString(id))// Use repo to check if snack exists
+                .flatMap(exists -> {
+                    if (exists) { // If snack exists, delete it, log this, and return empty mono (as it should)
+                        return snackRepository.deleteById(UUID.fromString(id))
+                                .doOnSuccess(result -> logger.info("Snack with id {} has been deleted", id))
+                                .then(Mono.empty());
+                    } else { // If snack doesn't exist, log this, and return error (see onErrorResume part)
+                        logger.info("**No snack found with id {}", id);
+                        return Mono.error(new RuntimeException("No snack found with id " + id));
                     }
                 })
-                .switchIfEmpty(Mono.defer(() -> {
-                    logger.info("**No snack found with id {}", id);
-                    return Mono.error(new RuntimeException("No snack found with id " + id));
-                }))
-                .doOnSuccess(result -> logger.info("Snack with id {} has been deleted", id))
-                .onErrorResume(error -> {
+                .onErrorResume(error -> { // Handle eventual error from previous step
                     logger.error("Failed to delete snack with id {}: {}", id, error.getMessage());
                     return Mono.error(new RuntimeException("Failed to delete snack"));
-                }).then();
+                })
+                // Return an empty Mono on completion; besides eventual previous error returned above
+                .then();
     }
-
-
-
-
-
-//, isPresent()
-//     .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Snack with id: " + id + " not found")));
 
 }
