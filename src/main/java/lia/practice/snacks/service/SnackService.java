@@ -232,7 +232,7 @@ public class SnackService {
     }
 
     // Checks if ealready exists in ANY of the collections
-    public Mono<Snack> createInSpecificCollWithoutPathVarSnackNoDuplicate(Snack snack) {
+    public Mono<Snack> createInSpecificCollWithoutPathVarNoDuplicate(Snack snack) {
         // Check if snack already exists in MongoDB
         // Use existByName method in this service class, that returns a boolean
         return existsByNameInAllCollections(snack.getName())
@@ -343,8 +343,69 @@ public class SnackService {
     }
 
 
-    ////---- Utility methods for multiple collections ----////
-    ////---- Utility methods for multiple collections ----////
+    ////---- multiple coll; collName as arg; use with e.g. manually created db coll ----////
+    ////---- multiple coll; collName as arg; use with e.g. manually created db coll ----////
+    ////---- multiple coll; collName as arg; use with e.g. manually created db coll ----////
+
+        public Mono<Snack> createSnackInSpecificCollCollNamePathVar(Snack snack, String collName) {
+
+        String creationDateTime;
+        if (snack.getCreationDateTimeString() == null) {
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+            String formattedDateTime = LocalDateTime.now().format(formatter);
+            creationDateTime = formattedDateTime;
+        } else {
+            creationDateTime = snack.getCreationDateTimeString();
+        }
+
+        // If used with entity that includes getOrgId, the orgId will just be null; ignore this
+        Snack tempSnack = new Snack(snack.getName(), snack.getFlavour(), snack.getWeight(), snack.getProductId(), creationDateTime);
+
+        logger.info("Created a snack");
+
+        String collectionName = collName; // Just for readability and clarification
+
+        return reactiveMongoTemplate.save(tempSnack, collectionName); // second arg = collection to save to
+    }
+
+    public Mono<Snack> createSnackInSpecificCollCollNamePathVarNoDuplicate(Snack snack, String collName) {
+        return existsByNameInAllCollections(snack.getName())
+                .flatMap(exists -> {
+                    if (exists) {
+//                        return Mono.error(new RuntimeException("Duplicate snack found"));
+                        logger.info(snack.getName() + " already exist");
+                        return Mono.empty(); // Compulsory return here, so set to empty
+                    } else {
+                        String creationDateTime;
+                        if (snack.getCreationDateTimeString() == null) {
+                            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+                            String formattedDateTime = LocalDateTime.now().format(formatter);
+                            creationDateTime = formattedDateTime;
+                        } else {
+                            creationDateTime = snack.getCreationDateTimeString();
+                        }
+
+                        Snack tempSnack = new Snack(snack.getName(), snack.getFlavour(), snack.getWeight(), snack.getProductId(), creationDateTime);
+
+                        logger.info(snack.getName() + " created");
+
+                        String collectionName = collName;
+                        return reactiveMongoTemplate.save(tempSnack, collectionName);
+                    }
+                });
+    }
+
+
+
+
+
+
+
+
+
+
+    ////---- Utility methods for multiple collections; for all approaches ----////
+    ////---- Utility methods for multiple collections; for all approaches ----////
 
     // Method for finding by id in ALL collections
     public Mono<Snack> findByIdInAllCollections(UUID id) {
@@ -376,19 +437,6 @@ public class SnackService {
                 .flatMap(collectionName -> reactiveMongoTemplate.exists(Query.query(Criteria.where("name").is(name)), Snack.class, collectionName))
                 .any(exists -> exists); // Returns true if any of the collections includes this snack
     }
-
-
-
-
-
-
-    ////---- multiple coll; collName as arg; use with e.g. manually created db coll ----////
-    ////---- multiple coll; collName as arg; use with e.g. manually created db coll ----////
-    ////---- multiple coll; collName as arg; use with e.g. manually created db coll ----////
-
-
-
-
 
 
 

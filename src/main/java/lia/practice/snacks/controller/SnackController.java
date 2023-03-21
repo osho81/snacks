@@ -194,4 +194,26 @@ public class SnackController {
     }
 
 
+    ////---- multiple coll; collName as arg; use with e.g. manually created db coll ----////
+    ////---- multiple coll; collName as arg; use with e.g. manually created db coll ----////
+    ////------- Similar to orgId as pathvar but this is string collName directly -------////
+
+        @PostMapping("/createsnacks/collnameaspathvar/{collName}")
+        @ResponseStatus(value = HttpStatus.CREATED)
+        public Mono<ResponseEntity<Snack>> createSnackInSpecificColl(@RequestBody Snack snack, @PathVariable String collName) {
+//            return snackService.createSnackInSpecificCollCollNamePathVar(snack, collName)
+            return snackService.createSnackInSpecificCollCollNamePathVarNoDuplicate(snack, collName)
+                    // On success return response incl. saved snack
+                    .map(savedSnack -> ResponseEntity.status(HttpStatus.CREATED).body(savedSnack))
+                    // Generic exception handle:
+//                .onErrorResume(throwable -> Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build()));
+                    // Specific exception handle with status and optional message:
+                    .onErrorResume(ResponseStatusException.class, e -> Mono.just(ResponseEntity.status(e.getStatusCode()).build()));
+        }
+
+
+
+
+
+
 }
