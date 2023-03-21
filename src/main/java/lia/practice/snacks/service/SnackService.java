@@ -377,4 +377,24 @@ public class SnackService {
                 .any(exists -> exists); // Returns true if any of the collections includes this snack
     }
 
+
+
+
+
+
+    ////---- multiple coll; collName as arg; use with e.g. manually created db coll ----////
+    ////---- multiple coll; collName as arg; use with e.g. manually created db coll ----////
+    ////---- multiple coll; collName as arg; use with e.g. manually created db coll ----////
+
+
+
+
+
+
+
+
+
+
+
+
 }
