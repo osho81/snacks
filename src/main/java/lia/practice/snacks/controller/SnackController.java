@@ -34,6 +34,13 @@ public class SnackController {
     }
 
 
+    ////-------- Methods used for default collection  -------////
+    ////-------- Methods used for default collection  -------////
+    ////-------- Methods used for default collection  -------////
+    ////-------- Methods used for default collection  -------////
+    ////-------- Methods used for default collection  -------////
+    ////-------- Methods used for default collection  -------////
+
 //    @GetMapping
 //    public Flux<Snack> getAllSnacks() {
 //        return snackService.getAllSnacks();
@@ -101,7 +108,7 @@ public class SnackController {
 //        return snackService.deleteById(id);
 //    }
 
-    // delete by id with response etc
+    // delete by id with response
     @DeleteMapping("/deletesnacks/{id}")
     public Mono<ResponseEntity<Void>> deleteById(@PathVariable String id) {
         return snackService.deleteById(id)
@@ -114,11 +121,13 @@ public class SnackController {
     }
 
 
-    ////---- Methods used for multiple collection from same entity ----////
-    ////---- Methods used for multiple collection from same entity ----////
-    ////---- Methods used for multiple collection from same entity ----////
+    ////---- Methods used for multiple collection; orgId as pathvar ----////
+    ////---- Methods used for multiple collection; orgId as pathvar ----////
+    ////---- Methods used for multiple collection; orgId as pathvar ----////
+    ////---- Methods used for multiple collection; orgId as pathvar ----////
+    ////---- Methods used for multiple collection; orgId as pathvar ----////
+    ////---- Methods used for multiple collection; orgId as pathvar ----////
 
-    // Use this if NOT have orgId in Snack entity
 //    @PostMapping("/createsnacks/{orgId}") // Get orgId as pathVar
 //    @ResponseStatus(value = HttpStatus.CREATED)
 //    public Mono<Snack> createSnackInSpecificColl(@RequestBody Snack snack, @PathVariable UUID orgId) {
@@ -126,15 +135,7 @@ public class SnackController {
 //        return snackService.createSnackInSpecificColl(snack, orgId);
 //    }
 
-    // Use this if have orgId in Snack entity
-    @PostMapping("/createsnacks/specificcoll") // No orgId pathVar; will use getOrgId
-    @ResponseStatus(value = HttpStatus.CREATED)
-    public Mono<Snack> createSnackInSpecificCollWithoutPathVar(@RequestBody Snack snack) {
-        // Use multiple/separated collections service method
-        return snackService.createSnackInSpecificCollWithoutPathVar(snack);
-    }
 
-    // Use this if NOT have orgId in Snack entity
 //    @GetMapping("/{orgId}")
 //    public Flux<Snack> getAllSnacksFromSpecificColl(@PathVariable UUID orgId) {
 //
@@ -151,7 +152,29 @@ public class SnackController {
 //        return snacks;
 //    }
 
-    // Use this if have orgId in Snack entity
+
+    // Use this if NOT have orgId in Snack entity
+//    @GetMapping("/snackbyid/{id}/{orgId}")
+//    public Mono<Snack> getByIdFromSpecificColl(@PathVariable String id, @PathVariable UUID orgId) {
+//        return snackService.getByIdFromSpecificColl(id, orgId);
+//    }
+
+
+    ////---- Methods used for multiple collection; orgId as entity field ----////
+    ////---- Methods used for multiple collection; orgId as entity field ----////
+    ////---- Methods used for multiple collection; orgId as entity field ----////
+    ////---- Methods used for multiple collection; orgId as entity field ----////
+    ////---- Methods used for multiple collection; orgId as entity field ----////
+    ////---- Methods used for multiple collection; orgId as entity field ----////
+
+
+    @PostMapping("/createsnacks/specificcoll") // No orgId pathVar; will use getOrgId
+    @ResponseStatus(value = HttpStatus.CREATED)
+    public Mono<Snack> createSnackInSpecificCollWithoutPathVar(@RequestBody Snack snack) {
+        // Use multiple/separated collections service method
+        return snackService.createSnackInSpecificCollWithoutPathVar(snack);
+    }
+
     @GetMapping("/{id}") // Snack id (not orgId in this version)
     public Flux<Snack> getAllSnacksFromSpecificColl(@PathVariable String id) {
 
@@ -168,13 +191,6 @@ public class SnackController {
         return snacks;
     }
 
-    // Use this if NOT have orgId in Snack entity
-//    @GetMapping("/snackbyid/{id}/{orgId}")
-//    public Mono<Snack> getByIdFromSpecificColl(@PathVariable String id, @PathVariable UUID orgId) {
-//        return snackService.getByIdFromSpecificColl(id, orgId);
-//    }
-
-    // Use this if have orgId in Snack entity
     @GetMapping("/snackbyid/specificcoll/{id}")
     public Mono<ResponseEntity<Snack>> getByIdFromSpecificColl(@PathVariable String id) {
         return snackService.getByIdFromSpecificColl(id)
@@ -196,7 +212,11 @@ public class SnackController {
 
     ////---- multiple coll; collName as arg; use with e.g. manually created db coll ----////
     ////---- multiple coll; collName as arg; use with e.g. manually created db coll ----////
-    ////------- Similar to orgId as pathvar but this is string collName directly -------////
+    ////---- multiple coll; collName as arg; use with e.g. manually created db coll ----////
+    ////---- multiple coll; collName as arg; use with e.g. manually created db coll ----////
+    ////---- multiple coll; collName as arg; use with e.g. manually created db coll ----////
+    ////---- multiple coll; collName as arg; use with e.g. manually created db coll ----////
+
 
         @PostMapping("/createsnacks/collnameaspathvar/{collName}")
         @ResponseStatus(value = HttpStatus.CREATED)
