@@ -41,7 +41,6 @@ public class SnackService {
 
 
 
-
     ////-------- Methods used for default collection  -------////
     ////-------- Methods used for default collection  -------////
     ////-------- Methods used for default collection  -------////
@@ -221,17 +220,17 @@ public class SnackService {
     }
 
 
-//    public Flux<Snack> getAllSnacksFromSpecificColl(UUID orgId) {
-//        logger.info("Get all snacks");
-//        String collectionName = "assessments_" + orgId;
-//        return reactiveMongoTemplate.findAll(Snack.class, collectionName);
-//    }
+    public Flux<Snack> getAllSnacksFromSpecificColl(UUID orgId) {
+        logger.info("Get all snacks");
+        String collectionName = "assessments_" + orgId;
+        return reactiveMongoTemplate.findAll(Snack.class, collectionName);
+    }
 
 
-//    public Mono<Snack> getByIdFromSpecificColl(String id, UUID orgId) {
-//        String collectionName = "assessments_" + orgId;
-//        return reactiveMongoTemplate.findById(UUID.fromString(id), Snack.class, collectionName);
-//    }
+    public Mono<Snack> getByIdFromSpecificColl(String id, UUID orgId) {
+        String collectionName = "assessments_" + orgId;
+        return reactiveMongoTemplate.findById(UUID.fromString(id), Snack.class, collectionName);
+    }
 
 
     ////---- Methods used for multiple collection; orgId as entity field ----////
@@ -418,12 +417,6 @@ public class SnackService {
 
 
 
-
-
-
-
-
-
     ////---- Utility methods for multiple collections; for all approaches ----////
     ////---- Utility methods for multiple collections; for all approaches ----////
     ////---- Utility methods for multiple collections; for all approaches ----////
@@ -458,11 +451,6 @@ public class SnackService {
                 .flatMap(collectionName -> reactiveMongoTemplate.exists(Query.query(Criteria.where("name").is(name)), Snack.class, collectionName))
                 .any(exists -> exists); // Returns true if any of the collections includes this snack
     }
-
-
-
-
-
 
 
 

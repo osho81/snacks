@@ -69,7 +69,7 @@ public class SnackController {
 //        return snackService.getById(id);
 //    }
 
-    // Get by id with responseEntity
+    // Get by id with response
     @GetMapping("/snackbyid/{id}")
     public Mono<ResponseEntity<Snack>> getById(@PathVariable String id) {
         return snackService.getById(id)
@@ -85,7 +85,7 @@ public class SnackController {
 //    }
 
 
-    // Create snacks with response entity, error etc
+    // Create snacks with response
     @PostMapping("/createsnacks")
     public Mono<ResponseEntity<Snack>> createSnack(@RequestBody Snack snack) {
         return snackService.createSnackNoDuplicate(snack)
@@ -128,36 +128,35 @@ public class SnackController {
     ////---- Methods used for multiple collection; orgId as pathvar ----////
     ////---- Methods used for multiple collection; orgId as pathvar ----////
 
-//    @PostMapping("/createsnacks/{orgId}") // Get orgId as pathVar
-//    @ResponseStatus(value = HttpStatus.CREATED)
-//    public Mono<Snack> createSnackInSpecificColl(@RequestBody Snack snack, @PathVariable UUID orgId) {
-//        // Use multiple/separated collections service method
-//        return snackService.createSnackInSpecificColl(snack, orgId);
-//    }
+    @PostMapping("/createsnacks/{orgId}") // Get orgId as pathVar
+    @ResponseStatus(value = HttpStatus.CREATED)
+    public Mono<Snack> createSnackInSpecificColl(@RequestBody Snack snack, @PathVariable UUID orgId) {
+        // Use multiple/separated collections service method
+        return snackService.createSnackInSpecificColl(snack, orgId);
+    }
 
 
-//    @GetMapping("/{orgId}")
-//    public Flux<Snack> getAllSnacksFromSpecificColl(@PathVariable UUID orgId) {
-//
-//        logger.info("Entering getAllSnacksFromSpecificColl() method");
-//
-//        Flux<Snack> snacks = snackService.getAllSnacksFromSpecificColl(orgId);
-//
-//        snacks.doOnComplete(() -> logger.trace("Finished retrieving all snacks"))
-//                .doOnError(error -> logger.error("Error occurred while retrieving snacks: {}", error.getMessage()))
-//                .doOnNext(snack -> logger.trace("Retrieved snack: {}", snack.getId()))
-//                .subscribe();
-//
-//        logger.trace("Leaving getAllSnacksFromSpecificColl() method");
-//        return snacks;
-//    }
+    @GetMapping("/{orgId}")
+    public Flux<Snack> getAllSnacksFromSpecificColl(@PathVariable UUID orgId) {
+
+        logger.info("Entering getAllSnacksFromSpecificColl() method");
+
+        Flux<Snack> snacks = snackService.getAllSnacksFromSpecificColl(orgId);
+
+        snacks.doOnComplete(() -> logger.trace("Finished retrieving all snacks"))
+                .doOnError(error -> logger.error("Error occurred while retrieving snacks: {}", error.getMessage()))
+                .doOnNext(snack -> logger.trace("Retrieved snack: {}", snack.getId()))
+                .subscribe();
+
+        logger.trace("Leaving getAllSnacksFromSpecificColl() method");
+        return snacks;
+    }
 
 
-    // Use this if NOT have orgId in Snack entity
-//    @GetMapping("/snackbyid/{id}/{orgId}")
-//    public Mono<Snack> getByIdFromSpecificColl(@PathVariable String id, @PathVariable UUID orgId) {
-//        return snackService.getByIdFromSpecificColl(id, orgId);
-//    }
+    @GetMapping("/snackbyid/{id}/{orgId}")
+    public Mono<Snack> getByIdFromSpecificColl(@PathVariable String id, @PathVariable UUID orgId) {
+        return snackService.getByIdFromSpecificColl(id, orgId);
+    }
 
 
     ////---- Methods used for multiple collection; orgId as entity field ----////
