@@ -1,7 +1,9 @@
 ### Snacks 
 ##### Reactive spring, using Webflux & reactive mongo with springBoot
 
-#### Purpose: practise reactive spring, reactive api 
+#### Purpose: 
+- practise reactive spring, reactive api 
+- Practise using multiple collections ("tables") in db
 
 #### Examples api & functions
 - Save snack to default collection (table) in mongo db 
