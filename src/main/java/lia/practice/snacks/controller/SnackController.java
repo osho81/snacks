@@ -46,7 +46,6 @@ public class SnackController {
 //        return snackService.getAllSnacks();
 //    }
 
-
     // Example getAllSnacks method with extensive trace example
     @GetMapping
     public Flux<Snack> getAllSnacks() {
