@@ -1,12 +1,12 @@
-package lia.practice.mongofluxpractice;
+package lia.practice.snacks;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class MongofluxApplication {
+public class SnacksApplication {
 	public static void main(String[] args) {
-		SpringApplication.run(MongofluxApplication.class, args);
+		SpringApplication.run(SnacksApplication.class, args);
 	}
 
 }
