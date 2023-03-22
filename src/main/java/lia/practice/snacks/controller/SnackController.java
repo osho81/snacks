@@ -88,13 +88,17 @@ public class SnackController {
     // Create snacks with response
     @PostMapping("/createsnacks")
     public Mono<ResponseEntity<Snack>> createSnack(@RequestBody Snack snack) {
-        return snackService.createSnackNoDuplicate(snack)
+        return snackService.createSnackNoDuplicate(snack) // Uncomment for NoDuplicate logic
+//        return snackService.createSnack(snack) // Uncomment for allowing duplicates
                 // On success return response incl. saved snack
                 .map(savedSnack -> ResponseEntity.status(HttpStatus.CREATED).body(savedSnack))
+                // Using straightforward check if returned empty (i.e. failed):
+                .defaultIfEmpty(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build());
                 // Generic exception handle:
-//                .onErrorResume(throwable -> Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build()));
+//                .onErrorResume(throwable -> Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build())); // or
+//                .onErrorResume(e -> Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build())); //
                 // Specific exception handle with status and optional message:
-               .onErrorResume(ResponseStatusException.class, e -> Mono.just(ResponseEntity.status(e.getStatusCode()).build()));
+//               .onErrorResume(ResponseStatusException.class, e -> Mono.just(ResponseEntity.status(e.getStatusCode()).build()));
     }
 
     @PutMapping("/updatesnacks/{id}")
@@ -109,14 +113,19 @@ public class SnackController {
 //    }
 
     // delete by id with response
+    // Delete by id with ResponseEntity
     @DeleteMapping("/deletesnacks/{id}")
-    public Mono<ResponseEntity<Void>> deleteById(@PathVariable String id) {
-        return snackService.deleteById(id)
+    private Mono<ResponseEntity<Void>> deleteAssessmentById(@PathVariable String id) {
+        return snackService.deleteSnackById(id)
+                // Return empty mono/void only to signal completion
                 .then(Mono.just(ResponseEntity.noContent().build()))
+                // If error, signal failure instead
                 .onErrorResume(error -> {
+                    // If error is returned from service, handle error here as well
                     logger.error("Failed to delete snack with id {}: {}", id, error.getMessage());
                     return Mono.just(ResponseEntity.notFound().build());
                 })
+                // Return response returned from either completion of failure
                 .map(response -> ResponseEntity.status(response.getStatusCode()).build());
     }
 

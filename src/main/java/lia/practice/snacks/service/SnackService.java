@@ -40,7 +40,6 @@ public class SnackService {
     }
 
 
-
     ////-------- Methods used for default collection  -------////
     ////-------- Methods used for default collection  -------////
     ////-------- Methods used for default collection  -------////
@@ -64,7 +63,16 @@ public class SnackService {
     public Mono<Snack> getById(String id) {
         return snackRepository.findById(UUID.fromString(id))
                 // If not exist, the task switches from finding to erroring
-                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Snack with id: " + id + " not found")));
+                .switchIfEmpty( // Switch task from finding to error handling, if snack not found
+                        Mono.defer(() -> { // Mono.defer delays and waits for this state to occur
+                            logger.info("Snack with id: " + id + " not found");
+                            // Return 404 not found, and customized message
+                            return Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Snack not found"));
+                        }))
+                // Handle returned error
+                .doOnError(error -> logger.error("Error finding snack: {}", error.getMessage()))
+                // Else if no previous errors, log successful completion
+                .doOnSuccess(snackResult -> logger.info("Snack with id " + id + " found: {}", snackResult));
     }
 
 
@@ -76,6 +84,7 @@ public class SnackService {
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"); // Specify format
             String formattedDateTime = LocalDateTime.now().format(formatter); // Apply format
             creationDateTime = formattedDateTime;
+            logger.info("Missing date & Time; Current date & time will be set");
 
             // Else set the date/time provided form postman/frontend
         } else {
@@ -91,8 +100,12 @@ public class SnackService {
         // Example create snack and provide productId-UUID & creation date
         Snack tempSnack = new Snack(snack.getName(), snack.getFlavour(), snack.getWeight(), UUID.randomUUID(), creationDateTime);
 
-        logger.info("Created a snack");
-        return snackRepository.save(tempSnack);
+        logger.info("Attempting to create a snack");
+        return snackRepository.save(tempSnack)
+                // On error (e.g. mongo db is shut down etc), log this error:
+                .doOnError(error -> logger.error("Error creating snack: {}", error.getMessage()))
+                .onErrorResume(error -> Mono.empty())
+                .doOnSuccess(snackResult -> logger.info("Created snack: {}", snackResult));
     }
 
     // Create snack with logic rejecting duplicate names
@@ -119,6 +132,7 @@ public class SnackService {
                             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"); // Specify format
                             String formattedDateTime = LocalDateTime.now().format(formatter); // Apply format
                             creationDateTime = formattedDateTime;
+                            logger.info("Missing date & Time; Current date & time " + formattedDateTime + " will be set");
                         } else {
                             creationDateTime = snack.getCreationDateTimeString();
                         }
@@ -129,10 +143,14 @@ public class SnackService {
                         // Provided uuid for productId from postman/frontend etc:
                         Snack tempSnack = new Snack(snack.getName(), snack.getFlavour(), snack.getWeight(), snack.getProductId(), creationDateTime);
 
-                        logger.info(snack.getName() + " created");
+                        logger.info("Attempting to create a snack");
 //                        System.out.println(snack.getName() + " created");
 
-                        return snackRepository.save(tempSnack);
+                        return snackRepository.save(tempSnack)
+                                // On error (e.g. mongo db is shut down etc), log this error:
+                                .doOnError(error -> logger.error("Error creating " + snack.getName() + ": {}", error.getMessage()))
+                                .onErrorResume(error -> Mono.empty())
+                                .doOnSuccess(snackResult -> logger.info(snack.getName() + " created snack: {}", snackResult));
                     }
                 });
     }
@@ -147,7 +165,7 @@ public class SnackService {
                     return snackRepository.save(existingSnack);
                 })
                 .map(updatedSnack -> new ResponseEntity<>(updatedSnack, HttpStatus.OK))
-                .defaultIfEmpty(new ResponseEntity<>(HttpStatus.NOT_FOUND));
+                .defaultIfEmpty(new ResponseEntity<>(HttpStatus.NOT_FOUND)); // Move this to controller
     }
 
     public Mono<ResponseEntity<Snack>> updateSnackNoDuplicate(String id, Snack snack) {
@@ -177,15 +195,38 @@ public class SnackService {
 ////        return snackRepository.deleteById(id);
 //    }
 
-    // Delete by id with logic, error etc
-    public Mono<Void> deleteById(String id) {
-        return snackRepository.deleteById(UUID.fromString(id))
-                .doOnSuccess(result -> logger.info("Snack with id {} has been deleted", id)) // Placeholder
-                .doOnError(error -> {
-                    logger.error("Failed to delete snack with id {}: {}", id, error.getMessage());
-                    throw new RuntimeException("Failed to delete snack");
-                });
+    // Broken: Delete by id with logic, error etc
+//    public Mono<Void> deleteById(String id) {
+//        return snackRepository.deleteById(UUID.fromString(id))
+//                .doOnError(error -> {
+//                    logger.error("Failed to delete snack with id {}: {}", id, error.getMessage());
+//                    throw new RuntimeException("Failed to delete snack");
+//                })
+//                .doOnSuccess(result -> logger.info("Snack with id {} has been deleted", id));
+//    }
+
+    // With Error handling
+    public Mono<Void> deleteSnackById(String id) {
+        return snackRepository.existsById(UUID.fromString(id))// Use repo to check if assessment exists
+                .flatMap(exists -> {
+                    if (exists) { // If assessment exists, delete it, log this, and return empty mono (as it should)
+                        return snackRepository.deleteById(UUID.fromString(id))
+                                .doOnSuccess(result -> logger.info("Snack with id {} has been deleted", id))
+                                .then(Mono.empty());
+                    } else { // If assassment doesn't exist, log this, and return error (see onErrorResume part)
+                        logger.info("**No Snack found with id {}", id);
+                        return Mono.error(new RuntimeException("No Assessment found with id " + id));
+                    }
+                })
+                .onErrorResume(error -> { // Handle eventual error from previous step
+                    logger.error("Failed to delete Snack with id {}: {}", id, error.getMessage());
+                    return Mono.error(new RuntimeException("Failed to delete Assessment"));
+                })
+                // Return an empty Mono on completion; besides eventual previous error returned above
+                .then();
     }
+
+
 
 
     ////---- Methods used for multiple collection; orgId as pathvar ----////
@@ -366,7 +407,7 @@ public class SnackService {
     ////---- multiple coll; collName as arg; use with e.g. manually created db coll ----////
     ////---- multiple coll; collName as arg; use with e.g. manually created db coll ----////
 
-        public Mono<Snack> createSnackInSpecificCollCollNamePathVar(Snack snack, String collName) {
+    public Mono<Snack> createSnackInSpecificCollCollNamePathVar(Snack snack, String collName) {
 
         String creationDateTime;
         if (snack.getCreationDateTimeString() == null) {
@@ -415,8 +456,6 @@ public class SnackService {
     }
 
 
-
-
     ////---- Utility methods for multiple collections; for all approaches ----////
     ////---- Utility methods for multiple collections; for all approaches ----////
     ////---- Utility methods for multiple collections; for all approaches ----////
@@ -451,7 +490,6 @@ public class SnackService {
                 .flatMap(collectionName -> reactiveMongoTemplate.exists(Query.query(Criteria.where("name").is(name)), Snack.class, collectionName))
                 .any(exists -> exists); // Returns true if any of the collections includes this snack
     }
-
 
 
 }
