@@ -12,3 +12,4 @@
 - Get or delete by id from specific db collection
 - Get all from all db collection
 - Get all from specific db collection
+- Utility methods for checking in all collections
