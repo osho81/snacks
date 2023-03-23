@@ -214,7 +214,7 @@ public class SnackService {
                                 .doOnSuccess(result -> logger.info("Snack with id {} has been deleted", id))
                                 .then(Mono.empty());
                     } else { // If assassment doesn't exist, log this, and return error (see onErrorResume part)
-                        logger.info("**No Snack found with id {}", id);
+                        logger.info("*No Snack found with id {}", id);
                         return Mono.error(new RuntimeException("No Assessment found with id " + id));
                     }
                 })
