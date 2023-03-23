@@ -49,7 +49,7 @@ public class SnackService {
 
 
     public Flux<Snack> getAllSnacks() {
-        logger.info("Get all snacks");
+        logger.info("Get all snacks -- (I am in test branch)");
         return snackRepository.findAll();
     }
 
