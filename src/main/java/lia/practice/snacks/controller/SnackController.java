@@ -130,14 +130,63 @@ public class SnackController {
     }
 
 
-    ////---- Methods used for multiple collection; orgId as pathvar ----////
-    ////---- Methods used for multiple collection; orgId as pathvar ----////
-    ////---- Methods used for multiple collection; orgId as pathvar ----////
-    ////---- Methods used for multiple collection; orgId as pathvar ----////
-    ////---- Methods used for multiple collection; orgId as pathvar ----////
-    ////---- Methods used for multiple collection; orgId as pathvar ----////
+    ////----  Multiple collection approach 1: orgId as ENTITY FIELD ----////
+    ////----  Multiple collection approach 1: orgId as ENTITY FIELD ----////
+    ////----  Multiple collection approach 1: orgId as ENTITY FIELD ----////
+    ////----  Multiple collection approach 1: orgId as ENTITY FIELD ----////
+    ////----  Multiple collection approach 1: orgId as ENTITY FIELD ----////
 
-    @PostMapping("/createsnacks/{orgId}") // Get orgId as pathVar
+
+    @PostMapping("/createsnacks/orgidasentityfield") // No orgId pathVar; will use getOrgId
+    @ResponseStatus(value = HttpStatus.CREATED)
+    public Mono<Snack> createSnackInSpecificCollWithoutPathvar(@RequestBody Snack snack) {
+        // Use multiple/separated collections service method
+        return snackService.createSnackInSpecificCollWithoutPathvar(snack);
+    }
+
+    @GetMapping("/orgidasentityfield/{id}") // Snack id (not orgId in this version)
+    public Flux<Snack> getAllSnacksFromSpecificColl(@PathVariable String id) {
+
+        logger.info("Entering getAllSnacksFromSpecificColl() method");
+
+        Flux<Snack> snacks = snackService.getAllSnacksFromSpecificColl(id);
+
+        snacks.doOnComplete(() -> logger.trace("Finished retrieving all snacks"))
+                .doOnError(error -> logger.error("Error occurred while retrieving snacks: {}", error.getMessage()))
+                .doOnNext(snack -> logger.trace("Retrieved snack: {}", snack.getId()))
+                .subscribe();
+
+        logger.info("Leaving getAllSnacksFromSpecificColl() method");
+        return snacks;
+    }
+
+    @GetMapping("/snackbyid/orgidasentityfield/{id}")
+    public Mono<ResponseEntity<Snack>> getByIdFromSpecificColl(@PathVariable String id) {
+        return snackService.getByIdFromSpecificColl(id)
+                .map(ResponseEntity::ok)
+                .onErrorResume(ResponseStatusException.class, e -> Mono.just(ResponseEntity.status(e.getStatusCode()).build()));
+    }
+
+    @DeleteMapping("/deletesnacks/orgidasentityfield/{id}")
+    public Mono<ResponseEntity<Void>> deleteByIdInAllColl(@PathVariable String id) {
+        return snackService.deleteByIdInAllColl(id)
+                .then(Mono.just(ResponseEntity.noContent().build()))
+                .onErrorResume(error -> {
+                    logger.error("Failed to delete snack with id {}: {}", id, error.getMessage());
+                    return Mono.just(ResponseEntity.notFound().build());
+                })
+                .map(response -> ResponseEntity.status(response.getStatusCode()).build());
+    }
+
+
+    ////---- Multiple collection approach 2: orgId as pathvar ----////
+    ////---- Multiple collection approach 2: orgId as pathvar ----////
+    ////---- Multiple collection approach 2: orgId as pathvar ----////
+    ////---- Multiple collection approach 2: orgId as pathvar ----////
+    ////---- Multiple collection approach 2: orgId as pathvar ----////
+
+
+    @PostMapping("/createsnacks/orgidaspathvar/{orgId}") // Get orgId as pathVar
     @ResponseStatus(value = HttpStatus.CREATED)
     public Mono<Snack> createSnackInSpecificColl(@RequestBody Snack snack, @PathVariable UUID orgId) {
         // Use multiple/separated collections service method
@@ -145,7 +194,7 @@ public class SnackController {
     }
 
 
-    @GetMapping("/{orgId}")
+    @GetMapping("/orgidaspathvar/{orgId}")
     public Flux<Snack> getAllSnacksFromSpecificColl(@PathVariable UUID orgId) {
 
         logger.info("Entering getAllSnacksFromSpecificColl() method");
@@ -162,68 +211,20 @@ public class SnackController {
     }
 
 
-    @GetMapping("/snackbyid/{id}/{orgId}")
+    // Get by id and by orgId, in case have info on both
+    @GetMapping("/snackbyid/orgidaspathvar/{id}/{orgId}")
     public Mono<Snack> getByIdFromSpecificColl(@PathVariable String id, @PathVariable UUID orgId) {
         return snackService.getByIdFromSpecificColl(id, orgId);
     }
 
 
-    ////---- Methods used for multiple collection; orgId as entity field ----////
-    ////---- Methods used for multiple collection; orgId as entity field ----////
-    ////---- Methods used for multiple collection; orgId as entity field ----////
-    ////---- Methods used for multiple collection; orgId as entity field ----////
-    ////---- Methods used for multiple collection; orgId as entity field ----////
-    ////---- Methods used for multiple collection; orgId as entity field ----////
 
 
-    @PostMapping("/createsnacks/specificcoll") // No orgId pathVar; will use getOrgId
-    @ResponseStatus(value = HttpStatus.CREATED)
-    public Mono<Snack> createSnackInSpecificCollWithoutPathVar(@RequestBody Snack snack) {
-        // Use multiple/separated collections service method
-        return snackService.createSnackInSpecificCollWithoutPathVar(snack);
-    }
-
-    @GetMapping("/{id}") // Snack id (not orgId in this version)
-    public Flux<Snack> getAllSnacksFromSpecificColl(@PathVariable String id) {
-
-        logger.info("Entering getAllSnacksFromSpecificColl() method");
-
-        Flux<Snack> snacks = snackService.getAllSnacksFromSpecificColl(id);
-
-        snacks.doOnComplete(() -> logger.trace("Finished retrieving all snacks"))
-                .doOnError(error -> logger.error("Error occurred while retrieving snacks: {}", error.getMessage()))
-                .doOnNext(snack -> logger.trace("Retrieved snack: {}", snack.getId()))
-                .subscribe();
-
-        logger.info("Leaving getAllSnacksFromSpecificColl() method");
-        return snacks;
-    }
-
-    @GetMapping("/snackbyid/specificcoll/{id}")
-    public Mono<ResponseEntity<Snack>> getByIdFromSpecificColl(@PathVariable String id) {
-        return snackService.getByIdFromSpecificColl(id)
-                .map(ResponseEntity::ok)
-                .onErrorResume(ResponseStatusException.class, e -> Mono.just(ResponseEntity.status(e.getStatusCode()).build()));
-    }
-
-    @DeleteMapping("/deletesnacks/specificcoll/{id}")
-    public Mono<ResponseEntity<Void>> deleteByIdInAllColl(@PathVariable String id) {
-        return snackService.deleteByIdInAllColl(id)
-                .then(Mono.just(ResponseEntity.noContent().build()))
-                .onErrorResume(error -> {
-                    logger.error("Failed to delete snack with id {}: {}", id, error.getMessage());
-                    return Mono.just(ResponseEntity.notFound().build());
-                })
-                .map(response -> ResponseEntity.status(response.getStatusCode()).build());
-    }
-
-
-    ////---- multiple coll; collName as arg; use with e.g. manually created db coll ----////
-    ////---- multiple coll; collName as arg; use with e.g. manually created db coll ----////
-    ////---- multiple coll; collName as arg; use with e.g. manually created db coll ----////
-    ////---- multiple coll; collName as arg; use with e.g. manually created db coll ----////
-    ////---- multiple coll; collName as arg; use with e.g. manually created db coll ----////
-    ////---- multiple coll; collName as arg; use with e.g. manually created db coll ----////
+    ////---- Multiple collection approach 3: collName as arg; for  e.g. manually created db coll ----////
+    ////---- Multiple collection approach 3: collName as arg; for  e.g. manually created db coll ----////
+    ////---- Multiple collection approach 3: collName as arg; for  e.g. manually created db coll ----////
+    ////---- Multiple collection approach 3: collName as arg; for  e.g. manually created db coll ----////
+    ////---- Multiple collection approach 3: collName as arg; for  e.g. manually created db coll ----////
 
 
         @PostMapping("/createsnacks/collnameaspathvar/{collName}")

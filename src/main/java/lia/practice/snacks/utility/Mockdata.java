@@ -56,11 +56,11 @@ public class Mockdata {
 //            snackService.createSnackNoDuplicate(snack5).subscribe();
 
             // Use save to specific collections (for 1-4)
-            snackService.createInSpecificCollWithoutPathVarNoDuplicate(snack1).subscribe();
-            snackService.createInSpecificCollWithoutPathVarNoDuplicate(snack2).subscribe();
-            snackService.createInSpecificCollWithoutPathVarNoDuplicate(snack3).subscribe();
-            snackService.createInSpecificCollWithoutPathVarNoDuplicate(snack4).subscribe();
-            snackService.createInSpecificCollWithoutPathVarNoDuplicate(snack5).subscribe();
+            snackService.createInSpecificCollWithoutPathvarNoDuplicate(snack1).subscribe();
+            snackService.createInSpecificCollWithoutPathvarNoDuplicate(snack2).subscribe();
+            snackService.createInSpecificCollWithoutPathvarNoDuplicate(snack3).subscribe();
+            snackService.createInSpecificCollWithoutPathvarNoDuplicate(snack4).subscribe();
+            snackService.createInSpecificCollWithoutPathvarNoDuplicate(snack5).subscribe();
 //            snackService.createSnackNoDuplicate(snack5).subscribe(); // snack5 saved to default coll
         };
 
