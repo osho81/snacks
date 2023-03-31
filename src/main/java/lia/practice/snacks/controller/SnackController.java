@@ -11,6 +11,7 @@ import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.List;
 import java.util.UUID;
 
 // Use UUID or String as paras/args depending on @Id datatype
@@ -94,10 +95,10 @@ public class SnackController {
                 .map(savedSnack -> ResponseEntity.status(HttpStatus.CREATED).body(savedSnack))
                 // Using straightforward check if returned empty (i.e. failed):
                 .defaultIfEmpty(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build());
-                // Generic exception handle:
+        // Generic exception handle:
 //                .onErrorResume(throwable -> Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build())); // or
 //                .onErrorResume(e -> Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build())); //
-                // Specific exception handle with status and optional message:
+        // Specific exception handle with status and optional message:
 //               .onErrorResume(ResponseStatusException.class, e -> Mono.just(ResponseEntity.status(e.getStatusCode()).build()));
     }
 
@@ -218,8 +219,6 @@ public class SnackController {
     }
 
 
-
-
     ////---- Multiple collection approach 3: collName as arg; for  e.g. manually created db coll ----////
     ////---- Multiple collection approach 3: collName as arg; for  e.g. manually created db coll ----////
     ////---- Multiple collection approach 3: collName as arg; for  e.g. manually created db coll ----////
@@ -227,22 +226,29 @@ public class SnackController {
     ////---- Multiple collection approach 3: collName as arg; for  e.g. manually created db coll ----////
 
 
-        @PostMapping("/createsnacks/collnameaspathvar/{collName}")
-        @ResponseStatus(value = HttpStatus.CREATED)
-        public Mono<ResponseEntity<Snack>> createSnackInSpecificColl(@RequestBody Snack snack, @PathVariable String collName) {
+    @PostMapping("/createsnacks/collnameaspathvar/{collName}")
+    @ResponseStatus(value = HttpStatus.CREATED)
+    public Mono<ResponseEntity<Snack>> createSnackInSpecificColl(@RequestBody Snack snack, @PathVariable String collName) {
 //            return snackService.createSnackInSpecificCollCollNamePathVar(snack, collName)
-            return snackService.createSnackInSpecificCollCollNamePathVarNoDuplicate(snack, collName)
-                    // On success return response incl. saved snack
-                    .map(savedSnack -> ResponseEntity.status(HttpStatus.CREATED).body(savedSnack))
-                    // Generic exception handle:
+        return snackService.createSnackInSpecificCollCollNamePathVarNoDuplicate(snack, collName)
+                // On success return response incl. saved snack
+                .map(savedSnack -> ResponseEntity.status(HttpStatus.CREATED).body(savedSnack))
+                // Generic exception handle:
 //                .onErrorResume(throwable -> Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build()));
-                    // Specific exception handle with status and optional message:
-                    .onErrorResume(ResponseStatusException.class, e -> Mono.just(ResponseEntity.status(e.getStatusCode()).build()));
-        }
+                // Specific exception handle with status and optional message:
+                .onErrorResume(ResponseStatusException.class, e -> Mono.just(ResponseEntity.status(e.getStatusCode()).build()));
+    }
 
 
+    /////----------- Other methods -----------/////
+    /////----------- Other methods -----------/////
 
-
+    // Get all snacks from all collection, specific colls as well as default coll
+    @GetMapping("/allfromallcolls")
+    public Mono<ResponseEntity<List<Snack>>> getAllFromAllColls() {
+        return snackService.getAllFromAllColls()
+                .map(assessmentList -> ResponseEntity.ok(assessmentList));
+    }
 
 
 }

@@ -17,6 +17,7 @@ import reactor.core.publisher.Mono;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
 import java.util.UUID;
 
 // Use UUID or String as paras/args depending on @Id datatype
@@ -226,7 +227,6 @@ public class SnackService {
     }
 
 
-
     ////----  Multiple collection approach 1: orgId as ENTITY FIELD ----////
     ////----  Multiple collection approach 1: orgId as ENTITY FIELD ----////
     ////----  Multiple collection approach 1: orgId as ENTITY FIELD ----////
@@ -283,7 +283,7 @@ public class SnackService {
                         // Also include orgId
                         Snack tempSnack = new Snack(snack.getOrgId(), snack.getName(), snack.getFlavour(), snack.getWeight(), snack.getProductId(), creationDateTime);
 
-                    logger.info(snack.getName() + " ");
+                        logger.info(snack.getName() + " ");
 
                         String collectionName = "snacks_" + snack.getOrgId();
                         // Use reactiveMongoTEMPLATE to save snack into org-specific collection
@@ -307,16 +307,16 @@ public class SnackService {
                     System.out.println("exists: " + exists);
                     if (exists) {
                         // Call the method for finding it in all collections (and get it)
-                        return findByIdInAllCollections(UUID.fromString(id))
-                                .flatMap(foundSnack -> {
-                                    System.out.println("my print " + foundSnack);
-                                    String collectionName = "snacks_" + foundSnack.getOrgId();
-                                    return reactiveMongoTemplate.findById(UUID.fromString(id), Snack.class, collectionName)
-                                            // If exsts, it will be found; redundant error:
-//                                            .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND,
-//                                                    "Snack with id" + id + " not found in collection " + collectionName)))
-                                            .map(snack -> foundSnack);
-                                });
+                        return findByIdInAllCollections(UUID.fromString(id));
+//                                .flatMap(foundSnack -> {
+//                                    System.out.println("my print " + foundSnack);
+//                                    String collectionName = "snacks_" + foundSnack.getOrgId();
+//                                    return reactiveMongoTemplate.findById(UUID.fromString(id), Snack.class, collectionName)
+//                                            // If exsts, it will be found; redundant error:
+////                                            .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND,
+////                                                    "Snack with id" + id + " not found in collection " + collectionName)))
+//                                            .map(snack -> foundSnack);
+//                                });
                     } else {
                         return Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Snack with id: " + id + " not found"));
                     }
@@ -324,6 +324,8 @@ public class SnackService {
                 // Optional printout of eventual error
                 .doOnError(error -> logger.error("Error while retrieving snack: {}", error.getMessage()));
     }
+
+
 
     // Delete by ID in ANY collection
     public Mono<Void> deleteByIdInAllColl(String id) {
@@ -388,8 +390,6 @@ public class SnackService {
     }
 
 
-
-
     ////---- Multiple collection approach 3: collName as arg; for  e.g. manually created db coll ----////
     ////---- Multiple collection approach 3: collName as arg; for  e.g. manually created db coll ----////
     ////---- Multiple collection approach 3: collName as arg; for  e.g. manually created db coll ----////
@@ -446,7 +446,6 @@ public class SnackService {
     }
 
 
-
     ////---- Utility methods for multiple collections; for all approaches ----////
     ////---- Utility methods for multiple collections; for all approaches ----////
     ////---- Utility methods for multiple collections; for all approaches ----////
@@ -480,6 +479,19 @@ public class SnackService {
                 // Check if exists in each of the retrieved collections:
                 .flatMap(collectionName -> reactiveMongoTemplate.exists(Query.query(Criteria.where("name").is(name)), Snack.class, collectionName))
                 .any(exists -> exists); // Returns true if any of the collections includes this snack
+    }
+
+
+    /////----------- Other methods -----------/////
+    /////----------- Other methods -----------/////
+
+    // Get all snacks from all collection, specific colls as well as default coll
+    public Mono<List<Snack>> getAllFromAllColls() { // Returns Mono, since collected and returned as one list
+        Flux<String> collectionNames = reactiveMongoTemplate.getCollectionNames();
+
+        return collectionNames
+                .flatMap(collectionName -> reactiveMongoTemplate.findAll(Snack.class, collectionName))
+                .collectList(); // Collect all snacks objects into a list, to return
     }
 
 
