@@ -66,40 +66,5 @@ public class Mockdata {
 
     }
 
-    // Create method for MOCK data (message + empty error if snack already exists)
-    // (Could also be in Service Method, with some slight changes)
-//    public Mono<Snack> createSnackNoDuplicateMock(Snack snack) {
-//        return snackRepository.existsByName(snack.getName())
-//                .flatMap(exists -> {
-//                    if (exists) {
-////                        logger.info(snack.getName() + " already exist"); // Use logger
-//                        System.out.println(snack.getName() + " already exist");
-//
-//                        return Mono.empty(); // Compulsory return here, so set to empty
-//
-//                    } else {
-//                        // Handle if date & time is null
-//                        String creationDateTime;
-//                        if (snack.getCreationDateTimeString() == null) {
-//                            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"); // Specify format
-//                            String formattedDateTime = LocalDateTime.now().format(formatter); // Apply format
-//                            creationDateTime = formattedDateTime;
-//                        } else {
-//                            creationDateTime = snack.getCreationDateTimeString();
-//                        }
-//
-//                        // uuid is provided in mock creation above
-//                        Snack tempSnack = new Snack(snack.getName(), snack.getFlavour(), snack.getWeight(),
-//                                snack.getProductId(), creationDateTime);
-//
-////                        logger.info(snack.getName() + " created");
-//                        System.out.println(snack.getName() + " created");
-//
-//                        // Save each snack passed into this method
-//                        return snackRepository.save(tempSnack);
-//                    }
-//                });
-//    }
-
 
 }
