@@ -35,5 +35,5 @@ RUN mvn -f /home/app/pom.xml --batch-mode --errors --fail-at-end -DskipTests cle
 ### After build, use produced jar to run container##
 FROM openjdk:17-jdk-slim
 # Use wildcard to use the produced jar; copy to determined path
-COPY --from=build /home/app/target/*.jar /home/app/mongoflux.jar
-ENTRYPOINT ["java", "-jar", "/home/app/mongoflux.jar"]
+COPY --from=build /home/app/target/*.jar /home/app/app.jar
+ENTRYPOINT ["java", "-jar", "/home/app/app.jar"]
