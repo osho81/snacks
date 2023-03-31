@@ -7,6 +7,10 @@ services:
     container_name: snackscont
     ports:
       - "8080:8080"
+#    environment: # use application.properties instead
+#      - SPRING_DATA_MONGODB_HOST=db
+#      - SPRING_DATA_MONGODB_DATABASE=snackscomposedb
+#      - SPRING_DATA_MONGODB_PORT=27017
     depends_on:
       - db
 
