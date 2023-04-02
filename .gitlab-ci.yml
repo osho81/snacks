@@ -15,15 +15,11 @@ deploy:
   stage: deploy
   image: docker:stable
   services:
-    - name: docker:dind
-      entrypoint: [ "env", "-u", "DOCKER_HOST" ]
-      command: [ "dockerd-entrypoint.sh" ]
-  variables:
-    DOCKER_HOST: tcp://docker:2375
-    DOCKER_DRIVER: overlay2
-    # See https://github.com/docker-library/docker/pull/166
+    - "docker:dind"
+  variables:  # not strictly needed, depending on runner configuration
+    DOCKER_HOST: "tcp://docker:2375"
     DOCKER_TLS_CERTDIR: ""
-  script:
-    - docker pull registry.gitlab.com/liapractise/snacks-react:1.0.0
-    - docker run -p 80:80 registry.gitlab.com/liapractise/snacks-react:1.0.0
-#    - docker run --privileged -p 80:80 registry.gitlab.com/liapractise/snacks-react:1.0.0
+    script:
+      - docker pull registry.gitlab.com/liapractise/snacks-react:1.0.0
+      - docker run -p 80:80 registry.gitlab.com/liapractise/snacks-react:1.0.0
+  #    - docker run --privileged -p 80:80 registry.gitlab.com/liapractise/snacks-react:1.0.0
