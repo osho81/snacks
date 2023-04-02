@@ -18,7 +18,6 @@ deploy:
     - docker:dind
   variables:
     DOCKER_HOST: tcp://docker:2375
-    privileged: true
   script:
     - docker pull registry.gitlab.com/liapractise/snacks-react:1.0.0
-    - docker run -d -p 80:80 registry.gitlab.com/liapractise/snacks-react:1.0.0
+    - docker run --privileged -d -p 80:80 registry.gitlab.com/liapractise/snacks-react:1.0.0
