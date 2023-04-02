@@ -16,8 +16,11 @@ deploy:
   image: docker:stable
   services:
     - docker:dind
-#  variables:
-#    DOCKER_HOST: tcp://docker:2375
+  variables:
+    DOCKER_HOST: tcp://docker:2375
+    DOCKER_DRIVER: overlay2
+    # See https://github.com/docker-library/docker/pull/166
+    DOCKER_TLS_CERTDIR: ""
   script:
     - docker pull registry.gitlab.com/liapractise/snacks-react:1.0.0
     - docker run --privileged -p 80:80 registry.gitlab.com/liapractise/snacks-react:1.0.0
