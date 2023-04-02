@@ -13,6 +13,11 @@ build:
 
 deploy:
   stage: deploy
+  image: docker:stable
+  services:
+    - docker:dind
+  variables:
+    DOCKER_HOST: tcp://docker:2375
   script:
-    - kubectl apply -f kubernetes/deployment.yaml
-    - kubectl apply -f kubernetes/service.yaml
+    - docker pull registry.gitlab.com/liapractise/snacks-react:1.0.0
+    - docker run -d -p 80:80 registry.gitlab.com/liapractise/snacks-react:1.0.0
