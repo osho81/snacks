@@ -14,6 +14,7 @@ build:
 deploy:
   stage: deploy
   image: docker:stable
+  privileged: true
   services:
     - docker:dind
   variables:
