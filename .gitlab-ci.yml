@@ -1,0 +1,18 @@
+image: docker:latest
+
+stages:
+  - build
+  - deploy
+
+build:
+  stage: build
+  script:
+    - docker build -t registry.gitlab.com/liapractise/snacks-react:1.0.0 .
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - docker push registry.gitlab.com/liapractise/snacks-react:1.0.0
+
+deploy:
+  stage: deploy
+  script:
+    - kubectl apply -f kubernetes/deployment.yaml
+    - kubectl apply -f kubernetes/service.yaml
