@@ -7,8 +7,8 @@ stages:
 build:
   stage: build
   script:
-    - echo "Wait for Docker daemon at tcp://localhost:2375"
-    - while ! nc -z localhost 2375; do sleep 0.1; done # Wait until docker socket is available
+    - echo "Wait for Docker daemon at tcp://docker:2375"
+    - while ! nc -z docker 2375; do sleep 0.1; done # Wait until docker socket is available
     - BUILD_PATH="path/to/Dockerfile"
     - BUILD_SERVICE="registry.gitlab.com/liapractise/snacks:1.0.0"
     - DOCKER_BUILDKIT=1 docker build -f ./docker_component/"${BUILD_PATH}"/Dockerfile -t "${BUILD_SERVICE}" --no-cache ./docker_component/"${BUILD_PATH}"/
