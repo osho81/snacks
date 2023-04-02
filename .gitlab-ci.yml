@@ -15,7 +15,9 @@ deploy:
   stage: deploy
   image: docker:stable
   services:
-    - docker:dind
+    - name: docker:dind
+      entrypoint: [ "env", "-u", "DOCKER_HOST" ]
+      command: [ "dockerd-entrypoint.sh" ]
   variables:
     DOCKER_HOST: tcp://docker:2375
     DOCKER_DRIVER: overlay2
