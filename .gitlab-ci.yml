@@ -23,10 +23,10 @@ deploy:
   stage: deploy
   image: docker:19.03.0
   services:
-    - docker:192.168.0.153-dind
-#  variables:
-#    DOCKER_HOST: tcp://192.168.0.153:2375/
-#    DOCKER_TLS_CERTDIR: ""
+    - docker:dind
+  variables:
+    DOCKER_HOST: tcp://192.168.0.153:2375/
+    DOCKER_TLS_CERTDIR: ""
   script:
     - docker pull registry.gitlab.com/liapractise/snacks:jdk-17-slim
     - docker run --privileged -d -p 80:80 registry.gitlab.com/liapractise/snacks:jdk-17-slim
