@@ -4,6 +4,9 @@ stages:
   - build
   - deploy
 
+services:
+  - docker:dind
+
 before_script:
   - docker info
 
@@ -16,8 +19,6 @@ build:
 
 deploy:
   stage: deploy
-  services:
-    - docker:dind
   script:
     - docker pull registry.gitlab.com/liapractise/snacks:jdk-17-slim
     - docker run --privileged -d -p 80:80 registry.gitlab.com/liapractise/snacks:jdk-17-slim
