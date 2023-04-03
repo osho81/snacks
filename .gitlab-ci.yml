@@ -10,11 +10,6 @@ before_script:
 build:
   stage: build
   script:
-#    - echo "Wait for Docker daemon at tcp://192.168.0.153:2375"
-#    - while ! nc -z 192.168.0.153 2375; do sleep 0.1; done # Wait until docker socket is available
-#    - BUILD_PATH="path/to/Dockerfile"
-#    - BUILD_SERVICE="registry.gitlab.com/liapractise/snacks:jdk-17-slim"
-#    - DOCKER_BUILDKIT=1 docker build -f ./docker_component/"${BUILD_PATH}"/Dockerfile -t "${BUILD_SERVICE}" --no-cache ./docker_component/"${BUILD_PATH}"/
     - docker build -t registry.gitlab.com/liapractise/snacks:jdk-17-slim .
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
     - docker push registry.gitlab.com/liapractise/snacks:jdk-17-slim
@@ -25,10 +20,10 @@ deploy:
   services:
     - docker:20.10.16-dind
   variables:
-    DOCKER_HOST: tcp://docker:2376
     DOCKER_TLS_CERTDIR: "/certs"
     DOCKER_TLS_VERIFY: 1
     DOCKER_CERT_PATH: "$DOCKER_TLS_CERTDIR/client"
   script:
     - docker pull registry.gitlab.com/liapractise/snacks:jdk-17-slim
     - docker run --privileged -d -p 80:80 registry.gitlab.com/liapractise/snacks:jdk-17-slim
+
