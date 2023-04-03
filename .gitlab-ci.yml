@@ -25,8 +25,7 @@ deploy:
   services:
     - docker:dind
   variables:
-    DOCKER_HOST: tcp://127.0.0.1:2375/
-    DOCKER_TLS_CERTDIR: ""
+    DOCKER_HOST: tcp://localhost:2376
   script:
     - docker pull registry.gitlab.com/liapractise/snacks:jdk-17-slim
     - docker run --privileged -d -p 80:80 registry.gitlab.com/liapractise/snacks:jdk-17-slim
