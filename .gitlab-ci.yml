@@ -18,7 +18,7 @@ build:
 
 deploy:
   stage: deploy
-  image: docker:stable
+  image: docker:19.03.0
   services:
     - docker:dind
   variables:
