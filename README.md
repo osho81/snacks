@@ -3,7 +3,7 @@
 
 #### Purpose: 
 - practise reactive spring, reactive api 
-- Practise using multiple collections ("tables") in db
+- Practise using multiple collections ("tables") in db, based on same entity
 
 #### Examples api & functions
 - Save snack to default collection (table) in mongo db 
